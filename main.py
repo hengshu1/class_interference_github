@@ -150,6 +150,7 @@ def evaluate_f():
     return train_loss
 
 f_loss=[]
+torch.save(net.state_dict(), 'results/model0_vgg_sgd_alpha_'+str(args.lr)+'.pyc')#initial model
 for epoch in range(start_epoch, start_epoch+300):
     train(epoch)
     test(epoch)
@@ -161,4 +162,4 @@ file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'.npy'
 np.save(file_name, f_loss)
 
 torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')
-
+    
