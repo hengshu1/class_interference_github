@@ -150,7 +150,7 @@ def evaluate_f():
     return train_loss
 
 f_loss=[]
-for epoch in range(start_epoch, start_epoch+100):
+for epoch in range(start_epoch, start_epoch+300):
     train(epoch)
     test(epoch)
     f_e = evaluate_f()
@@ -159,3 +159,6 @@ for epoch in range(start_epoch, start_epoch+100):
 f_loss=np.array(f_loss)
 file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'.npy'
 np.save(file_name, f_loss)
+
+torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')
+

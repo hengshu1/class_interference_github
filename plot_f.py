@@ -5,6 +5,7 @@ import numpy as np
 f_loss01 = np.load('results/f_vgg_sgd_alpha_'+str(0.1)+'.npy')
 f_loss001 = np.load('results/f_vgg_sgd_alpha_'+str(0.01)+'.npy')
 # f_loss0001 = np.load('results/f_vgg_sgd_alpha_'+str(0.001)+'.npy')
+print('f_loss001.shape=',f_loss001.shape)
 
 rho01,rho001,rho0001 = [], [], []
 for i in range(len(f_loss01)):
