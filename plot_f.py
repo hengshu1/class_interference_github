@@ -1,13 +1,23 @@
 import matplotlib.pyplot as pt
 import numpy as np
 
-lr=0.1
-file_name='results/f_vgg_sgd_alpha_'+str(lr)+'.npy'
-f_loss = np.load(file_name)
-print('f_loss.shape=', f_loss)#1D?
 
-rho=[]
-for i in range(len(f_loss)):
-    rho.append(f_loss[i]/f_loss[0])
-pt.plot(rho, '-b')
+f_loss01 = np.load('results/f_vgg_sgd_alpha_'+str(0.1)+'.npy')
+f_loss001 = np.load('results/f_vgg_sgd_alpha_'+str(0.01)+'.npy')
+f_loss0001 = np.load('results/f_vgg_sgd_alpha_'+str(0.001)+'.npy')
+
+rho01,rho001,rho0001 = [], [], []
+for i in range(len(f_loss01)):
+    rho01.append(f_loss01[i]/f_loss01[0])
+
+for i in range(len(f_loss001)):
+    rho001.append(f_loss001[i]/f_loss001[0])
+
+for i in range(len(f_loss0001)):
+    rho0001.append(f_loss0001[i]/f_loss0001[0])
+
+pt.plot(rho01, '-b',label='lr=0.01')
+pt.plot(rho001, '--r', label='lr=0.01')
+pt.plot(rho0001, '-.k', label='lr=0.001')
+
 pt.show()
