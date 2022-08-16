@@ -13,6 +13,7 @@ import argparse
 
 from models import *
 from utils import progress_bar
+import numpy as np
 
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
@@ -43,6 +44,8 @@ trainset = torchvision.datasets.CIFAR10(
     root='./data', train=True, download=True, transform=transform_train)
 trainloader = torch.utils.data.DataLoader(
     trainset, batch_size=128, shuffle=True, num_workers=2)
+trainloader_big = torch.utils.data.DataLoader(
+    trainset, batch_size=1024, shuffle=False, num_workers=2)
 
 testset = torchvision.datasets.CIFAR10(
     root='./data', train=False, download=True, transform=transform_test)
@@ -52,7 +55,7 @@ testloader = torch.utils.data.DataLoader(
 classes = ('plane', 'car', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck')
 
-# Model
+# Models
 print('==> Building model..')
 net = VGG('VGG19')
 # net = ResNet18()
@@ -91,9 +94,6 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=5e-
 # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
 
-
-
-# Training
 def train(epoch):
     print('\nEpoch: %d' % epoch)
     net.train()
@@ -137,21 +137,23 @@ def test(epoch):
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
-    # Save checkpoint.
-    acc = 100.*correct/total
-    if acc > best_acc:
-        print('Saving..')
-        state = {
-            'net': net.state_dict(),
-            'acc': acc,
-            'epoch': epoch,
-        }
-        if not os.path.isdir('checkpoint'):
-            os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/ckpt.pth')
-        best_acc = acc
+def evaluate_f():
+    '''evaluate the loss on the whole training dataset: no training. '''
+        train_loss = 0
+        for batch_idx, (inputs, targets) in enumerate(trainloader_big):
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = net(inputs)
+            loss = criterion(outputs, targets)
+            train_loss += loss.item()
+        return train_loss
 
-
+f_loss=[]
 for epoch in range(start_epoch, start_epoch+200):
     train(epoch)
     test(epoch)
+    f_e = evaluate_f()
+    f_loss.append(f_e)
+
+f_loss=np.array(f_loss)
+file_name='results/f_sgd_alpha_'+str(args.lr)+'.npy'
+np.save(filename, f_loss)
