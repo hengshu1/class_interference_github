@@ -162,4 +162,4 @@ file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'.npy'
 np.save(file_name, f_loss)
 
 torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')
-    
+

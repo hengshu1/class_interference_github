@@ -148,19 +148,13 @@ def evaluate_f_class():
         outputs = net(inputs)
         for cl in range(len(classes)):
             index = (targets == cl).nonzero()[:, 0]
-            inputs_c = inputs[index, :, :]
-            targets_c = targets[index]
-            print('targets.shape=', targets.shape)
-            print('outputs.shape=', outputs.shape)
-            sys.exit(1)
-            loss_c = criterion(outputs[index], targets_c)
+            loss_c = criterion(outputs[index], targets[index])
             train_losses_class[cl] += loss_c.item()
-
     return train_losses_class
 
 
 fc_loss = []
-for epoch in range(start_epoch, start_epoch+100):
+for epoch in range(start_epoch, start_epoch+2):
     train(epoch)
     # test(epoch)
     fc_loss.append(evaluate_f_class())
@@ -168,4 +162,4 @@ for epoch in range(start_epoch, start_epoch+100):
 fc_loss = np.array(fc_loss)
 print('fc_loss.shape', fc_loss.shape)
 file_name = 'results/fc_vgg_sgd_alpha_'+str(args.lr)+'.npy'
-np.save(file_name, f_loss)
+np.save(file_name, fc_loss)
