@@ -139,21 +139,21 @@ def test(epoch):
 
 def evaluate_f():
     '''evaluate the loss on the whole training dataset: no training. '''
-        train_loss = 0
-        for batch_idx, (inputs, targets) in enumerate(trainloader_big):
-            inputs, targets = inputs.to(device), targets.to(device)
-            outputs = net(inputs)
-            loss = criterion(outputs, targets)
-            train_loss += loss.item()
-        return train_loss
+    train_loss = 0
+    for batch_idx, (inputs, targets) in enumerate(trainloader_big):
+        inputs, targets = inputs.to(device), targets.to(device)
+        outputs = net(inputs)
+        loss = criterion(outputs, targets)
+        train_loss += loss.item()
+    return train_loss
 
 f_loss=[]
-for epoch in range(start_epoch, start_epoch+200):
+for epoch in range(start_epoch, start_epoch+100):
     train(epoch)
     test(epoch)
     f_e = evaluate_f()
     f_loss.append(f_e)
 
 f_loss=np.array(f_loss)
-file_name='results/f_sgd_alpha_'+str(args.lr)+'.npy'
-np.save(filename, f_loss)
+file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'.npy'
+np.save(file_name, f_loss)
