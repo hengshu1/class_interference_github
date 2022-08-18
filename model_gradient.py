@@ -49,7 +49,8 @@ def model_changed(net):
 
 def show_value(net):
     for name, param in net.named_parameters():
-        # print(name, param.size())
+        print(name, param.size())
+        print(name, 'grad size:', param.grad.size())
         if len(param.size()) == 1:
             print('sample value in the beginning')
             print(param[0])
@@ -75,22 +76,9 @@ transform_train = transforms.Compose([
 trainset = torchvision.datasets.CIFAR10(
     root='./data', train=True, download=True, transform=transform_train)
 
-class_loader = get_train_cats(trainset, batch_size=1024, label=3)  # get cats
+# class_loader = get_train_cats(trainset, batch_size=1024, label=3)  # get cats
 
 #how many cats?
 
 #fix x = net; we are interested at the final model centered. compute f'(x)
 #And check the curvatures around it; and see any direction going down? any leaky direction? If mu<0, then it's leaky
-# get a new noisy model, this is y.
-
-# forward: input the data, and backprop and compute f'(y)
-
-#compute corigrad=(y-x)^T (f'(y)-f'(x))/||x-y||^2
-
-#record these Corigrads. Draw a histogram
-#take the min which is mu; max which is the L (approximation)
-
-#It's just a computation problem. In the future, if computer gets more powerful, we can get more points.
-
-#we can understand why some test samples are predicted wrong; there are usually below 3% test error.
-#find mild and dramatic directions for them is interesting. 
