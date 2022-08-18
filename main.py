@@ -47,6 +47,7 @@ trainset = torchvision.datasets.CIFAR10(
     root='./data', train=True, download=True, transform=transform_train)
 trainloader = torch.utils.data.DataLoader(
     trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
+
 trainloader_big = torch.utils.data.DataLoader(
     trainset, batch_size=1024, shuffle=False, num_workers=2)
 
@@ -165,3 +166,5 @@ np.save(file_name, f_loss)
 
 # torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')s
 torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024.pyc')
+
+print('note check final test acc!!!!')
