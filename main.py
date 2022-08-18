@@ -17,12 +17,13 @@ import numpy as np
 
 
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
-parser.add_argument('--resume', '-r', action='store_true',
-                    help='resume from checkpoint')
+parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
+parser.add_argument('--batchsize', default=128, type=int, help='batch size')
+parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
 args = parser.parse_args()
 
 print('@@lr=', args.lr)
+print('@@batchsize=', args.batchsize)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 best_acc = 0  # best test accuracy
@@ -45,7 +46,7 @@ transform_test = transforms.Compose([
 trainset = torchvision.datasets.CIFAR10(
     root='./data', train=True, download=True, transform=transform_train)
 trainloader = torch.utils.data.DataLoader(
-    trainset, batch_size=128, shuffle=True, num_workers=2)
+    trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
 trainloader_big = torch.utils.data.DataLoader(
     trainset, batch_size=1024, shuffle=False, num_workers=2)
 
@@ -90,7 +91,7 @@ if args.resume:
 
 criterion = nn.CrossEntropyLoss()
 
-optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=5e-4)#first do without momentum
+optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=0)#first do without momentum
 # optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 # removing annealing
 # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
@@ -150,7 +151,7 @@ def evaluate_f():
     return train_loss
 
 f_loss=[]
-torch.save(net.state_dict(), 'results/model0_vgg_sgd_alpha_'+str(args.lr)+'.pyc')#initial model
+# torch.save(net.state_dict(), 'results/model0_vgg_sgd_alpha_'+str(args.lr)+'.pyc')#initial model
 for epoch in range(start_epoch, start_epoch+300):
     train(epoch)
     test(epoch)
@@ -158,8 +159,9 @@ for epoch in range(start_epoch, start_epoch+300):
     f_loss.append(f_e)
 
 f_loss=np.array(f_loss)
-file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'.npy'
+# file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'.npy'
+file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024.npy'
 np.save(file_name, f_loss)
 
-torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')
-
+# torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')s
+torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024.pyc')
