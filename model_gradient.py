@@ -16,49 +16,6 @@ from utils import progress_bar
 from torch.nn.utils import parameters_to_vector as to_vector
 # from .measure_cross_class_distances import get_train_cats
 
-parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
-parser.add_argument('--batchsize', default=128, type=int, help='batch size')
-parser.add_argument('--resume', '-r', action='store_true',
-                    help='resume from checkpoint')
-args = parser.parse_args()
-
-print('@@lr=', args.lr)
-print('@@batchsize=', args.batchsize)
-
-net = VGG('VGG19')
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-net = net.to(device)
-if device == 'cuda':
-    net = torch.nn.DataParallel(net)
-    cudnn.benchmark = True
-
-# model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
-# model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
-# model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
-model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)+'_batchsize1024'
-net.load_state_dict(torch.load(model_path+'.pyc'))
-# print(net)
-
-# Data
-print('==> Preparing data..')
-transform_train = transforms.Compose([
-    transforms.RandomCrop(32, padding=4),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-])
-
-criterion = nn.CrossEntropyLoss(reduction='sum')  # by default. it's mean.
-optimizer = optim.SGD(net.parameters(), lr=args.lr,
-                      momentum=0, weight_decay=0)  # first do without momentum
-
-trainset = torchvision.datasets.CIFAR10(
-    root='./data', train=True, download=True, transform=transform_train)
-trainloader = torch.utils.data.DataLoader(
-    trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
-
 
 def check_param_grad(net):
     '''
@@ -83,8 +40,7 @@ def check_param_grad(net):
     return wg_all
 
 
-def aver_grad(epoch):
-    print('\nEpoch: %d' % epoch)
+def aver_grad(trainloader, net, optimizer, criterion):
     net.train()
     train_loss = 0
     correct = 0
@@ -114,16 +70,63 @@ def aver_grad(epoch):
         else:
             grads_sum += grads
 
-
     grads_sum /= total
     print('total samples=', total)
     return grads_sum.cpu().numpy()
 
 
-#only one epoch
-grad = aver_grad(1)
-print('grads.shape=', grad.shape)
-np.save(model_path+'_grad.npy', grad)
+if __name__ == "__main__":
 
-# class_loader = get_train_cats(trainset, batch_size=1024, label=3)  # get cats
-#how many cats?
+    parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+    parser.add_argument('--lr', default=0.001,
+                        type=float, help='learning rate')
+    parser.add_argument('--batchsize', default=128,
+                        type=int, help='batch size')
+    parser.add_argument('--resume', '-r', action='store_true',
+                        help='resume from checkpoint')
+    args = parser.parse_args()
+
+    print('@@lr=', args.lr)
+    print('@@batchsize=', args.batchsize)
+
+    net = VGG('VGG19')
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    net = net.to(device)
+    if device == 'cuda':
+        net = torch.nn.DataParallel(net)
+        cudnn.benchmark = True
+
+    # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
+    # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
+    # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
+    model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)+'_batchsize1024'
+    net.load_state_dict(torch.load(model_path+'.pyc'))
+    # print(net)
+
+    # Data
+    print('==> Preparing data..')
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465),
+                             (0.2023, 0.1994, 0.2010)),
+    ])
+
+    criterion = nn.CrossEntropyLoss(reduction='sum')  # by default. it's mean.
+    optimizer = optim.SGD(net.parameters(), lr=args.lr,
+                          momentum=0, weight_decay=0)  # first do without momentum
+
+    trainset = torchvision.datasets.CIFAR10(
+        root='./data', train=True, download=True, transform=transform_train)
+    trainloader = torch.utils.data.DataLoader(
+        trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
+
+    #only one epoch
+    grad = aver_grad(trainloader)
+    print('grads.shape=', grad.shape)
+    # np.save(model_path+'_grad.npy', grad)
+
+    # class_loader = get_train_cats(trainset, batch_size=1024, label=3)  # get cats
+    #how many cats?
