@@ -34,8 +34,8 @@ if device == 'cuda':
     net = torch.nn.DataParallel(net)
     cudnn.benchmark = True
 
-# model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
-model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
+model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
+# model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
 net.load_state_dict(torch.load(model_path+'.pyc'))
 # print(net)
 
@@ -119,7 +119,7 @@ def aver_grad(epoch):
 
 
 #only one epoch
-grad = train(1)
+grad = aver_grad(1)
 print('grads.shape=', grad.shape)
 np.save(model_path+'_grad.npy', grad)
 
