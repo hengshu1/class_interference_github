@@ -19,7 +19,8 @@ from torch.nn.utils import parameters_to_vector as to_vector
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
 parser.add_argument('--batchsize', default=128, type=int, help='batch size')
-parser.add_argument('--resume', '-r', action='store_true', help='resume from checkpoint')
+parser.add_argument('--resume', '-r', action='store_true',
+                    help='resume from checkpoint')
 args = parser.parse_args()
 
 print('@@lr=', args.lr)
@@ -47,13 +48,15 @@ transform_train = transforms.Compose([
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-criterion = nn.CrossEntropyLoss()#by default. it's mean. So the gradient is averaged over samples in a batch.
-optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=0)#first do without momentum
+criterion = nn.CrossEntropyLoss(reduction='sum')  # by default. it's mean.
+optimizer = optim.SGD(net.parameters(), lr=args.lr,
+                      momentum=0, weight_decay=0)  # first do without momentum
 
 trainset = torchvision.datasets.CIFAR10(
     root='./data', train=True, download=True, transform=transform_train)
 trainloader = torch.utils.data.DataLoader(
     trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
+
 
 def check_param_grad(net):
     '''
@@ -70,14 +73,15 @@ def check_param_grad(net):
             first_time = False
         # print('1d len:', _wgrad.size())
         else:
-            wg_all = torch.cat((wg_all,_wgrad))
+            wg_all = torch.cat((wg_all, _wgrad))
 
     print('total params from w_all=', wg_all.size())
     pytorch_total_params = sum(p.numel() for p in net.parameters())
-    print('total params =', pytorch_total_params)#same
+    print('total params =', pytorch_total_params)  # same
     return wg_all
 
-def train(epoch):
+
+def aver_grad(epoch):
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
@@ -85,14 +89,13 @@ def train(epoch):
     total = 0
 
     first_time = True
-    total_batches = 0
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = net(inputs)
         loss = criterion(outputs, targets)
         loss.backward()
-        optimizer.step()
+        # optimizer.step()
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -109,11 +112,11 @@ def train(epoch):
         else:
             grads_sum += grads
 
-        total_batches += 1
 
-    grads_sum /= total_batches
-    print('total_batches=', total_batches)
+    grads_sum /= total
+    print('total samples=', total)
     return grads_sum.cpu().numpy()
+
 
 #only one epoch
 grad = train(1)
@@ -122,4 +125,3 @@ np.save(model_path+'_grad.npy', grad)
 
 # class_loader = get_train_cats(trainset, batch_size=1024, label=3)  # get cats
 #how many cats?
-
