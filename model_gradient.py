@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 from utils import progress_bar
 from torch.nn.utils import parameters_to_vector as to_vector
 # from .measure_cross_class_distances import get_train_cats
-
+from main import device
 
 def check_param_grad(net):
     '''
@@ -34,9 +34,9 @@ def check_param_grad(net):
         else:
             wg_all = torch.cat((wg_all, _wgrad))
 
-    print('total params from w_all=', wg_all.size())
+    # print('total params from w_all=', wg_all.size())
     pytorch_total_params = sum(p.numel() for p in net.parameters())
-    print('total params =', pytorch_total_params)  # same
+    # print('total params =', pytorch_total_params)  # same
     return wg_all
 
 
@@ -51,6 +51,7 @@ def aver_grad(trainloader, net, optimizer, criterion):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = net(inputs)
+        # print('targets=', targets)
         loss = criterion(outputs, targets)
         loss.backward()
         # optimizer.step()
@@ -98,9 +99,10 @@ if __name__ == "__main__":
         cudnn.benchmark = True
 
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
-    # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
+    model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
-    model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)+'_batchsize1024'
+    # model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)+'_batchsize1024'
+    print('loading model at path:', model_path)
     net.load_state_dict(torch.load(model_path+'.pyc'))
     # print(net)
 
@@ -124,7 +126,7 @@ if __name__ == "__main__":
         trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
 
     #only one epoch
-    grad = aver_grad(trainloader)
+    grad = aver_grad(trainloader, net, optimizer, criterion)
     print('grads.shape=', grad.shape)
     # np.save(model_path+'_grad.npy', grad)
 

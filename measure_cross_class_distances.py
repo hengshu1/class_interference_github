@@ -30,7 +30,6 @@ def get_train_cats(trainset, batch_size, label):
         trainset, sampler=sampler, batch_size=batch_size, num_workers=2)
     return trainloader
 
-
 def get_train_loader(batch_size):
     transform_train = transforms.Compose([
         # this has randomness even if shuffle is disabled.

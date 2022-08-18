@@ -15,7 +15,7 @@ from models import *
 from utils import progress_bar
 import numpy as np
 
-
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 classes = ('plane', 'car', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck')
 
@@ -88,7 +88,6 @@ if __name__ == "__main__":
     print('@@lr=', args.lr)
     print('@@batchsize=', args.batchsize)
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 

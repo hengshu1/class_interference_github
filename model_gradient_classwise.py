@@ -14,9 +14,10 @@ import torchvision
 import torchvision.transforms as transforms
 from utils import progress_bar
 from torch.nn.utils import parameters_to_vector as to_vector
-from .measure_cross_class_distances import get_train_cats
-from .model_gradient import check_param_grad, aver_grad
-from .main import classes
+from measure_cross_class_distances import get_train_cats
+from model_gradient import check_param_grad, aver_grad
+from main import classes, device
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
@@ -27,7 +28,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print('@@lr=', args.lr)
-    print('@@batchsize=', args.batchsize)
 
     net = VGG('VGG19')
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -49,6 +49,7 @@ if __name__ == "__main__":
 
         net = torch.nn.DataParallel(net)
 
+        # model_path = 'results/model_vgg_sgd_alpha_'+str(0.1)
         model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)
         # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
         # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
@@ -67,11 +68,10 @@ if __name__ == "__main__":
             trainloader = get_train_cats(
                 trainset, batch_size=1024, label=cl)  # get objects
 
-            #only one epoch
             grad = aver_grad(trainloader, net, optimizer, criterion)
             print('grads.shape=', grad.shape)
             np.save(model_path+'_grad_'+classes[cl]+'.npy', grad)
 
-            grad_cls_norm2[i] = np.linalg.norm(grad)
+            grad_cls_norm2[cl] = np.linalg.norm(grad)
 
         np.save(model_path+'_grad_norm2_classes.npy', grad_cls_norm2)
