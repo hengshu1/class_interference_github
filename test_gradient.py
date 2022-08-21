@@ -18,8 +18,7 @@ from torch.nn.utils import parameters_to_vector as to_vector
 from main import device
 from torchvision.datasets import MNIST, CIFAR10
 
-net = VGG('VGG19')
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 
 def test(trainloader, net, optimizer, criterion):
     # net.train()
@@ -50,6 +49,8 @@ def test(trainloader, net, optimizer, criterion):
     return
 
 net = VGG('VGG19')
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 # Data
 print('==> Preparing data..')
 transform_train = transforms.Compose([
