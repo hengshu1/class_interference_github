@@ -104,6 +104,7 @@ if __name__ == "__main__":
 
         #this is just one time running.
         # save_objects_all_classes(trainloader)
+        # sys.exit(1)
 
         # train_cls = dataset_cls(label=3)
         # train_cls_loader = torch.utils.data.DataLoader(train_cls, batch_size=1000, shuffle=True, num_workers=2)
@@ -123,8 +124,7 @@ if __name__ == "__main__":
         # print(net)
 
         criterion = nn.CrossEntropyLoss(reduction='sum')  # by default. it's mean.
-        optimizer = optim.SGD(net.parameters(), lr=args.lr,
-                              momentum=0, weight_decay=0)  # first do without momentum
+        optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
 
         #This computes the gradient for each class
         grad_cls_norm2 = np.zeros(len(classes))
