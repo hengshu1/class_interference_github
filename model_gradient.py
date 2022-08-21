@@ -4,6 +4,7 @@ import torch.nn as nn
 from models import *
 import torch.optim as optim
 import numpy as np
+import random
 import copy
 import time
 import sys
@@ -18,6 +19,16 @@ from torch.nn.utils import parameters_to_vector as to_vector
 from main import device
 
 torch.manual_seed(0)
+
+def cat_net_param_1D(grad_net):
+    grads = []
+    for name in grad_net.keys():
+        # print('name=', name)
+        # grads.append(grad_net[name].view(-1))
+        grads.append(to_vector(grad_net[name]))
+    grads = torch.cat(grads)
+    print('grads.shape=', grads.shape)
+    return grads
 
 def concat_param_grad(net):
     '''
@@ -37,11 +48,10 @@ def concat_param_grad(net):
         if wg_all is None:
             wg_all = _wgrad
         else:
+            # print('wg_all.shape=', wg_all.shape)
+            # print('_wgrad.shape=', _wgrad.shape)
             wg_all = torch.cat((wg_all, _wgrad))
 
-    # print('total params from w_all=', wg_all.size())
-    pytorch_total_params = sum(p.numel() for p in net.parameters())
-    # print('total params =', pytorch_total_params)  # same
     return wg_all
 
 
@@ -141,8 +151,10 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
     return grads_sum
 
 
+
 if __name__ == "__main__":
     torch.manual_seed(0)
+    random.seed(1)
 
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
     parser.add_argument('--lr', default=0.001,
@@ -160,9 +172,9 @@ if __name__ == "__main__":
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     net = net.to(device)
-    # if device == 'cuda':
-        # net = torch.nn.DataParallel(net)
-        # cudnn.benchmark = True
+    if device == 'cuda':
+        net = torch.nn.DataParallel(net)
+        cudnn.benchmark = True
 
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
     model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)
@@ -202,13 +214,16 @@ if __name__ == "__main__":
     grad_1D = aver_grad_1D(trainloader, net, optimizer, criterion)
     print('grad_1D.shape=', grad_1D.shape)
 
-    #why the two gradients are different????
-    grads = []
-    for name in grad_net.keys():
-        # grads.append(grad_net[name].view(-1))
-        grads.append(to_vector(grad_net[name]))
-    grads = torch.cat(grads)
-    print('grads.shape=', grads.shape)
+    #check if the names are in the same order: YES. same.
+    # print('keys:')
+    # for name in grad_net.keys():
+    #     print(name)
+    # print('named params')
+    # for name, param in net.named_parameters():
+    #     print(name)
+
+    #why the two gradients are Still different????
+    grads = cat_net_param_1D(grad_net)
 
     print('grad diff=', torch.norm(grads - grad_1D))
 
