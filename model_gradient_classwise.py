@@ -11,6 +11,8 @@ import torch.backends.cudnn as cudnn
 
 from torchvision.datasets import MNIST, CIFAR10
 
+import random
+
 import argparse
 import torchvision
 import torchvision.transforms as transforms
@@ -20,6 +22,7 @@ from torch.nn.utils import parameters_to_vector as to_vector
 from measure_cross_class_distances import get_train_cats
 from model_gradient import concat_param_grad, aver_grad_1D
 from main import classes
+
 
 device = 'cuda'
 
@@ -65,6 +68,9 @@ def train_loader_class(label):
     return torch.utils.data.DataLoader(dataset, batch_size=1000, shuffle=True, num_workers=2)
 
 if __name__ == "__main__":
+    torch.manual_seed(0)
+    random.seed(1)
+
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
     parser.add_argument('--lr', default=0.001,
                         type=float, help='learning rate')
@@ -75,19 +81,19 @@ if __name__ == "__main__":
     print('@@lr=', args.lr)
 
     net = VGG('VGG19')
-    # net = net.to(device)
+    net = net.to(device)
     if device == 'cuda':
         cudnn.benchmark = True
 
         # Data
         print('==> Preparing data..')
-        transform_train = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465),
-                                 (0.2023, 0.1994, 0.2010)),
-        ])
+        # transform_train = transforms.Compose([
+        #     transforms.RandomCrop(32, padding=4),
+        #     transforms.RandomHorizontalFlip(),
+        #     transforms.ToTensor(),
+        #     transforms.Normalize((0.4914, 0.4822, 0.4465),
+        #                          (0.2023, 0.1994, 0.2010)),
+        # ])
 
         # trainset = torchvision.datasets.CIFAR10(
         #     root='./data', train=True, download=True, transform=transform_train)

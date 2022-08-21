@@ -47,7 +47,7 @@ def concat_param_grad(net):
 
 def aver_grad_1D(trainloader, net, optimizer, criterion):
     '''average the gradient into 1D vector'''
-    # net.train()
+    net.eval()
     train_loss = 0
     correct = 0
     total = 0
@@ -63,11 +63,12 @@ def aver_grad_1D(trainloader, net, optimizer, criterion):
         # optimizer.step()#no model update
 
         if batch_idx == 0:
+            print('inputs=', inputs[0:10, 0, 0, 0])
             print('targets=', targets)
             for name, param in net.named_parameters():
-                print('name=', name)
-                print(param.grad[:3, 0, 0, 0])
-                sys.exit(1)
+                if name == 'features.0.weight':
+                    print('name=', name)
+                    print(param.grad[:10, 0, 0, 0])
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -91,7 +92,7 @@ def aver_grad_1D(trainloader, net, optimizer, criterion):
 
 def aver_grad_net(trainloader, net, optimizer, criterion):
     '''average the gradient and keeps it in a model form'''
-    # net.train()
+    net.eval()
     train_loss = 0
     correct = 0
     total = 0
@@ -110,11 +111,12 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
         # optimizer.step()
 
         if batch_idx == 0:
+            print('inputs=', inputs[0:10, 0, 0, 0])
             print('targets=', targets)
             for name, param in net.named_parameters():
-                print('name=', name)
-                print(param.grad[:3, 0, 0, 0])
-                break
+                if name == 'features.0.weight':
+                    print('name=', name)
+                    print(param.grad[:10, 0, 0, 0])
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -140,6 +142,7 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
 
 
 if __name__ == "__main__":
+    torch.manual_seed(0)
 
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
     parser.add_argument('--lr', default=0.001,
@@ -161,8 +164,6 @@ if __name__ == "__main__":
         # net = torch.nn.DataParallel(net)
         # cudnn.benchmark = True
 
-    net1 = copy.deepcopy(net)
-
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
     model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
@@ -173,9 +174,15 @@ if __name__ == "__main__":
 
     # Data
     print('==> Preparing data..')
-    transform_train = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
+    # transform_train = transforms.Compose([
+    #     transforms.RandomCrop(32, padding=4),
+    #     transforms.RandomHorizontalFlip(),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize((0.4914, 0.4822, 0.4465),
+    #                          (0.2023, 0.1994, 0.2010)),
+    # ])
+
+    transform_test = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.4914, 0.4822, 0.4465),
                              (0.2023, 0.1994, 0.2010)),
@@ -184,30 +191,26 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss(reduction='sum')  # by default. it's mean.
     optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # first do without momentum
 
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
+    trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_test)#use transform_test
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batchsize, shuffle=False, num_workers=2)
 
     print('aver_grad_net')
     grad_net = aver_grad_net(trainloader, net, optimizer, criterion)
 
-    #reset the model
-    net2 = net1
-    optimizer2 = optim.SGD(net2.parameters(), lr=args.lr, momentum=0, weight_decay=0)
-    criterion2 = nn.CrossEntropyLoss(reduction='sum')
-
     print('@@@@')
     print('aver_grad_1D')
-    grad_1D = aver_grad_1D(trainloader, net2, optimizer2, criterion2)
+    grad_1D = aver_grad_1D(trainloader, net, optimizer, criterion)
     print('grad_1D.shape=', grad_1D.shape)
 
     #why the two gradients are different????
-    # grads = []
-    # for name in grad_net.keys():
-    #     grads.append(grad_net[name].view(-1))
-    #     # grads.append(to_vector(grad_net[name]))
-    # grads = torch.cat(grads)
+    grads = []
+    for name in grad_net.keys():
+        # grads.append(grad_net[name].view(-1))
+        grads.append(to_vector(grad_net[name]))
+    grads = torch.cat(grads)
+    print('grads.shape=', grads.shape)
 
-    # print('grad diff=', torch.norm(grads - grad_1D))
+    print('grad diff=', torch.norm(grads - grad_1D))
 
     # np.save(model_path+'_grad.npy', grad)
 
