@@ -17,10 +17,11 @@ from torch.nn.utils import parameters_to_vector as to_vector
 # from .measure_cross_class_distances import get_train_cats
 from main import device
 
-def check_param_grad(net):
+def concat_param_grad(net):
     '''
     fix x = net; we are interested at the final model centered. compute f'(x)
     And check the curvatures around it; and see any direction going down? any leaky direction? If mu<0, then it's leaky
+    todo: follow https://discuss.pytorch.org/t/get-the-gradient-of-the-network-parameters/50575/2
     '''
     first_time = True
     for name, param in net.named_parameters():
@@ -40,7 +41,8 @@ def check_param_grad(net):
     return wg_all
 
 
-def aver_grad(trainloader, net, optimizer, criterion):
+def aver_grad_1D(trainloader, net, optimizer, criterion):
+    '''average the gradient into 1D vector'''
     net.train()
     train_loss = 0
     correct = 0
@@ -64,7 +66,7 @@ def aver_grad(trainloader, net, optimizer, criterion):
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
-        grads = check_param_grad(net)
+        grads = concat_param_grad(net)
         if first_time:
             grads_sum = grads
             first_time = False
@@ -73,6 +75,47 @@ def aver_grad(trainloader, net, optimizer, criterion):
 
     grads_sum /= total
     print('total samples=', total)
+    return grads_sum.cpu().numpy()
+
+
+
+def aver_grad_net(trainloader, net, optimizer, criterion):
+    '''average the gradient and keeps it in a model form'''
+    net.train()
+    train_loss = 0
+    correct = 0
+    total = 0
+
+    for batch_idx, (inputs, targets) in enumerate(trainloader):
+        inputs, targets = inputs.to(device), targets.to(device)
+        optimizer.zero_grad()
+        outputs = net(inputs)
+        # print('targets=', targets)
+        loss = criterion(outputs, targets)
+        loss.backward()
+        # optimizer.step()
+
+        train_loss += loss.item()
+        _, predicted = outputs.max(1)
+        total += targets.size(0)
+        correct += predicted.eq(targets).sum().item()
+
+        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                     % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+
+        grads_sum = dict.fromkeys(net.named_parameters().keys())
+        print('grads_sum=', grads_sum)
+        sys.exit(1)
+        for name, param in net.named_parameters():
+            if grads_sum is None:
+                grads_sum[name] = param.grad
+            else:
+                grads_sum[name] += param.grad
+
+    print('total samples=', total)
+    for name, _ in net.named_parameters():
+        grads_sum[name] /= total
+
     return grads_sum.cpu().numpy()
 
 
@@ -126,7 +169,8 @@ if __name__ == "__main__":
         trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
 
     #only one epoch
-    grad = aver_grad(trainloader, net, optimizer, criterion)
+    # grad = aver_grad_1D(trainloader, net, optimizer, criterion)
+    grad = aver_grad_net(trainloader, net, optimizer, criterion)
     print('grads.shape=', grad.shape)
     # np.save(model_path+'_grad.npy', grad)
 

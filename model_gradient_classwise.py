@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from utils import progress_bar
 from torch.nn.utils import parameters_to_vector as to_vector
 from measure_cross_class_distances import get_train_cats
-from model_gradient import check_param_grad, aver_grad
+from model_gradient import concat_param_grad, aver_grad_1D
 from main import classes
 
 device = 'cuda'
@@ -132,7 +132,7 @@ if __name__ == "__main__":
             print('class: ', classes[cl])
             trainloader_cls = train_loader_class(label=cl)
 
-            grad = aver_grad(trainloader_cls, net, optimizer, criterion)
+            grad = aver_grad_1D(trainloader_cls, net, optimizer, criterion)
             print('grads.shape=', grad.shape)
             np.save(model_path+'_grad_'+classes[cl]+'.npy', grad)
 
