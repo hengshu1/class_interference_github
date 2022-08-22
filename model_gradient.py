@@ -67,6 +67,10 @@ def aver_grad_1D(trainloader, net, optimizer, criterion):
     grads_sum = None
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
+
+        inputs = inputs.reshape(inputs.size(0), -1)
+        # print('inputs.shape=', inputs.size())
+
         optimizer.zero_grad()
         outputs = net(inputs)
         # print('targets=', targets)
@@ -75,12 +79,15 @@ def aver_grad_1D(trainloader, net, optimizer, criterion):
         # optimizer.step()#no model update
 
         if batch_idx == 0:
-            print('inputs=', inputs[0:10, 0, 0, 0])
+            print(inputs.shape)
+            # print('inputs=', inputs[0:10, 0, 0, 0])
+            print('inputs=', inputs[0:10, 0])
             print('targets=', targets)
             for name, param in net.named_parameters():
                 if name == 'module.features.0.weight':
                     print('name=', name)
-                    print(param.grad[:10, 0, 0, 0])
+                    # print(param.grad[:10, 0, 0, 0])
+                    print(param.grad[:10, 0])
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -116,6 +123,9 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
 
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
+
+        inputs = inputs.reshape(inputs.size(0), -1)
+
         optimizer.zero_grad()
         outputs = net(inputs)
         loss = criterion(outputs, targets)
@@ -123,12 +133,14 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
         # optimizer.step()
 
         if batch_idx == 0:
-            print('inputs=', inputs[0:10, 0, 0, 0])
+            # print('inputs=', inputs[0:10, 0, 0, 0])
+            print('inputs=', inputs[0:10, 0])
             print('targets=', targets)
             for name, param in net.named_parameters():
                 if name == 'module.features.0.weight':
                     print('name=', name)
-                    print(param.grad[:10, 0, 0, 0])
+                    # print(param.grad[:10, 0, 0, 0])
+                    print(param.grad[:10, 0])
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -170,7 +182,11 @@ if __name__ == "__main__":
     print('@@lr=', args.lr)
     print('@@batchsize=', args.batchsize)
 
-    net = VGG('VGG19')
+    # net = VGG('VGG19')
+
+    #for debugging
+    net = nn.Linear(3*32*32, 10)
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     net = net.to(device)
@@ -220,9 +236,15 @@ if __name__ == "__main__":
     print('keys:')
     for name in grad_net.keys():
         print(name)
-    print('named params')
+        if len(grad_net[name].size()) == 2:
+            print(grad_net[name][0:5, 0])
+        else:
+            print(grad_net[name][0:5])
+    print('@@@@named params')
     for name, param in net.named_parameters():
         print(name)
+    print(grad_1D[:10])
+    print(grad_1D[-10:])
 
     #why the two gradients are Still different????
     grads = cat_net_param_1D(grad_net)
