@@ -12,6 +12,7 @@ import torch.backends.cudnn as cudnn
 from torchvision.datasets import MNIST, CIFAR10
 
 import random
+import pickle
 
 import argparse
 import torchvision
@@ -20,8 +21,9 @@ from torch.utils.data import DataLoader, TensorDataset
 from utils import progress_bar
 from torch.nn.utils import parameters_to_vector as to_vector
 from measure_cross_class_distances import get_train_cats
-from model_gradient import concat_param_grad, aver_grad_1D
+from model_gradient import concat_param_grad, aver_grad_1D, aver_grad_net
 from main import classes, device
+
 
 def save_objects_of_class(data_loader, label):
     print(data_loader)
@@ -123,16 +125,25 @@ if __name__ == "__main__":
         criterion = nn.CrossEntropyLoss(reduction='sum')  # by default. it's mean.
         optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
 
-        #This computes the gradient for each class
-        grad_cls_norm2 = np.zeros(len(classes))
+        #This computes the gradient for each class and saves it
+        # grad_cls_norm2 = np.zeros(len(classes))
+
         for cl in range(len(classes)):
             print('class: ', classes[cl])
             trainloader_cls = train_loader_class(label=cl)
 
-            grad = aver_grad_1D(trainloader_cls, net, optimizer, criterion)
-            print('grads.shape=', grad.shape)
-            np.save(model_path+'_grad_'+classes[cl]+'.npy', grad.cpu().numpy())
+            # saving gradient as a nd array
+            # grad = aver_grad_1D(trainloader_cls, net, optimizer, criterion)
+            # print('grads.shape=', grad.shape)
+            # np.save(model_path+'_grad_'+classes[cl]+'.npy', grad.cpu().numpy())
+            # grad_cls_norm2[cl] = torch.norm(grad)
 
-            grad_cls_norm2[cl] = torch.norm(grad)
+            #saving gradient as a dictionary
+            grad_net = aver_grad_net(trainloader_cls, net, optimizer, criterion)
 
-        np.save(model_path+'_grad_norm2_classes.npy', grad_cls_norm2)
+            f = open(model_path+'_grad_'+classes[cl]+'.pkl', "wb")
+            pickle.dump(dict, f)
+            f.close()
+
+
+        # np.save(model_path+'_grad_norm2_classes.npy', grad_cls_norm2)
