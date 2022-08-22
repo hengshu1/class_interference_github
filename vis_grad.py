@@ -2,14 +2,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
+'''
+todo 
+double check how the grad is computed. 
+Make sure the gradient uses the latest one which fixed the bug of pointer. 
+'''
+
 
 #batch size comparison
-model_SB = 'results/model_vgg_sgd_alpha_'+str(0.001)
-model_LB = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
+# model_SB = 'results/model_vgg_sgd_alpha_'+str(0.001)
+# model_LB = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
 
 #learning rate comparison
-# model_SB = 'results/model_vgg_sgd_alpha_'+str(0.01)
-# model_LB = 'results/model_vgg_sgd_alpha_'+str(0.001)
+model_SB = 'results/model_vgg_sgd_alpha_'+str(0.01)
+model_LB = 'results/model_vgg_sgd_alpha_'+str(0.001)
 
 grad_SB = np.load(model_SB+'_grad.npy')
 grad_LB = np.load(model_LB+'_grad.npy')

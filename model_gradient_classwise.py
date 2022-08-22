@@ -43,7 +43,7 @@ def save_objects_of_class(data_loader, label):
             _X = torch.cat((_X, inputs_cls), dim=0)
             _Y = torch.cat((_Y, targets_cls), dim=0)
 
-    print('total cats is ', total_objects_cls)
+    print('total' + classes[label] + ' is ', total_objects_cls)
     print('_X.shape=', _X.shape)
     print('_Y.shape=', _Y.shape)
 
@@ -69,8 +69,7 @@ if __name__ == "__main__":
     random.seed(1)
 
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-    parser.add_argument('--lr', default=0.001,
-                        type=float, help='learning rate')
+    parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
     parser.add_argument('--resume', '-r', action='store_true',
                         help='resume from checkpoint')
     args = parser.parse_args()
@@ -101,25 +100,22 @@ if __name__ == "__main__":
         #so here I used a solution that first retrieve from the dataloader, save, and then load; this guarantees using the same transformed data as trainloader
 
         trainset = CIFAR10(root='./data', train=True, transform=transform_test, download=True)
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=4096, shuffle=True, num_workers=2)
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=4096, shuffle=False, num_workers=2)
 
         #this is just one time running.
-        save_objects_all_classes(trainloader)
-        sys.exit(1)
+        # save_objects_all_classes(trainloader)
+        # sys.exit(1)
 
-        # train_cls = dataset_cls(label=3)
-        # train_cls_loader = torch.utils.data.DataLoader(train_cls, batch_size=1000, shuffle=True, num_workers=2)
-        #
+        # train_cls = dataset_class(label=3)
+        # train_cls_loader = torch.utils.data.DataLoader(train_cls, batch_size=1000, shuffle=False, num_workers=2)
         # for batch_idx, (inputs, targets) in enumerate(train_cls_loader):
         #     print('targets=', targets)
         #     print('inputs.shape=', inputs.shape)
 
         net = torch.nn.DataParallel(net)
 
-        # model_path = 'results/model_vgg_sgd_alpha_'+str(0.1)
-        model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)
-        # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
-        # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
+        model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
+        # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024'
         print('loading model at path:', model_path)
         net.load_state_dict(torch.load(model_path+'.pyc'))
         # print(net)
@@ -135,8 +131,8 @@ if __name__ == "__main__":
 
             grad = aver_grad_1D(trainloader_cls, net, optimizer, criterion)
             print('grads.shape=', grad.shape)
-            np.save(model_path+'_grad_'+classes[cl]+'.npy', grad)
+            np.save(model_path+'_grad_'+classes[cl]+'.npy', grad.cpu().numpy())
 
-            grad_cls_norm2[cl] = np.linalg.norm(grad)
+            grad_cls_norm2[cl] = torch.norm(grad)
 
         np.save(model_path+'_grad_norm2_classes.npy', grad_cls_norm2)

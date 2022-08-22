@@ -43,8 +43,8 @@ def concat_param_grad(net):
         # print(name, param.size())
         # print(name, 'grad size:', param.grad.size())
         # print('param.grad.shape=', param.grad.shape)
-        if name == 'module.features.0.weight':
-            print('concat_param_grad: param.grad=', param.grad.cpu().numpy()[:5, 0])
+        # if name == 'module.features.0.weight':
+        #     print('concat_param_grad: param.grad=', param.grad.cpu().numpy()[:5, 0])
         _wgrad = to_vector(param.grad)
         # wg_all.append(_wgrad)
         if wg_all is None:
@@ -68,27 +68,12 @@ def aver_grad_1D(trainloader, net, optimizer, criterion):
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
 
-        inputs = inputs.reshape(inputs.size(0), -1)
-        # print('inputs.shape=', inputs.size())
-
         optimizer.zero_grad()
         outputs = net(inputs)
         # print('targets=', targets)
         loss = criterion(outputs, targets)
         loss.backward()#compute gradient
         # optimizer.step()#no model update
-
-        if batch_idx == 2:
-            print(inputs.shape)
-            # print('inputs=', inputs[0:10, 0, 0, 0])
-            print('inputs=', inputs[0:10, 0])
-            print('targets=', targets)
-            for name, param in net.named_parameters():
-                #if name == 'module.features.0.weight':
-                if name == 'weight':
-                    print('name=', name, ', grad:')
-                    # print(param.grad[:10, 0, 0, 0])
-                    print(param.grad[:10, 0])
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -123,30 +108,15 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
     grads_sum = {}
     for name, param in net.named_parameters():
         grads_sum[name] = None
-    print('grads_sum=', grads_sum)
 
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
-
-        inputs = inputs.reshape(inputs.size(0), -1)
 
         optimizer.zero_grad()
         outputs = net(inputs)
         loss = criterion(outputs, targets)
         loss.backward()
         # optimizer.step()
-
-        if batch_idx == 2:
-            # print('inputs=', inputs[0:10, 0, 0, 0])
-            print('inputs=', inputs[0:10, 0])
-            print('targets=', targets)
-            for name, param in net.named_parameters():
-                #if name == 'module.features.0.weight':
-                if name == 'weight':
-                    print('name=', name)
-                    # print(param.grad[:10, 0, 0, 0])
-                    print('param.grad=', param.grad.cpu().numpy()[:10, 0])
-                    print(param.grad[:10, 0])
 
         test_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -160,13 +130,11 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
             # print('name=', name)
             if grads_sum[name] is None:
                 grads_sum[name] = copy.deepcopy(param.grad) #must use the deepcopy. otherwise pointer issue!
-                print('first time')
             else:
                 grads_sum[name] += param.grad
 
     print('total samples=', total)
     for name in grads_sum.keys():
-        print('normalization, name=', name)
         grads_sum[name] /= total
 
     return grads_sum
@@ -189,35 +157,21 @@ if __name__ == "__main__":
     print('@@lr=', args.lr)
     print('@@batchsize=', args.batchsize)
 
-    # net = VGG('VGG19')
-
-    #for debugging
-    net = nn.Linear(3*32*32, 10)
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    net = VGG('VGG19')
 
     net = net.to(device)
     if device == 'cuda':
         net = torch.nn.DataParallel(net)
         cudnn.benchmark = True
 
-    # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)
-    model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)
-    # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
-    # model_path = 'results/model_vgg_sgd_alpha_'+str(0.01)+'_batchsize1024'
-    # print('loading model at path:', model_path)
-    # net.load_state_dict(torch.load(model_path+'.pyc'))
+    model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
+    # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024'
+    print('loading model at path:', model_path)
+    net.load_state_dict(torch.load(model_path+'.pyc'))
     # print(net)
 
     # Data
     print('==> Preparing data..')
-    # transform_train = transforms.Compose([
-    #     transforms.RandomCrop(32, padding=4),
-    #     transforms.RandomHorizontalFlip(),
-    #     transforms.ToTensor(),
-    #     transforms.Normalize((0.4914, 0.4822, 0.4465),
-    #                          (0.2023, 0.1994, 0.2010)),
-    # ])
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
@@ -243,23 +197,11 @@ if __name__ == "__main__":
     print('aver_grad_net')
     grad_net = aver_grad_net(trainloader, net, optimizer, criterion)
 
-
-    #check if the names are in the same order: YES. same.
-    # print('keys:')
-    # for name in grad_net.keys():
-    #     print(name)
-    #     if len(grad_net[name].size()) == 2:
-    #         print(grad_net[name][0:5, 0])
-    #     else:
-    #         print(grad_net[name][0:5])
-    # print('@@@@named params')
-    # for name, param in net.named_parameters():
-    #     print(name)
     print('grad_1D')
     print(grad_1D[:10])
     # print(grad_1D[-10:])
 
-    #why the two gradients are Still different????
+    #same results
     grads = cat_net_param_1D(grad_net)
 
     print('grads:')
@@ -269,7 +211,6 @@ if __name__ == "__main__":
     print('ratio 2:', grads[:10] / grad_1D[-10:])
     print('grad diff=', torch.norm(grads - grad_1D))
 
-    # np.save(model_path+'_grad.npy', grad)
+    np.save(model_path+'_grad.npy', grad_1D.cpu().numpy())
 
-    # class_loader = get_train_cats(trainset, batch_size=1024, label=3)  # get cats
-    #how many cats?
+
