@@ -37,6 +37,7 @@ def concat_param_grad(net):
     todo: follow https://discuss.pytorch.org/t/get-the-gradient-of-the-network-parameters/50575/2
     '''
     wg_all = None
+    # wg_all = []
     for name, param in net.named_parameters():
         # print('name=', name)
         # print(name, param.size())
@@ -45,6 +46,7 @@ def concat_param_grad(net):
         # if name == 'module.features.0.weight':
         #     print('concat_param_grad: param.grad=', param.grad.cpu().numpy()[:3, 0, 0, 0])
         _wgrad = to_vector(param.grad)
+        # wg_all.append(_wgrad)
         if wg_all is None:
             wg_all = _wgrad
         else:
@@ -76,7 +78,7 @@ def aver_grad_1D(trainloader, net, optimizer, criterion):
             print('inputs=', inputs[0:10, 0, 0, 0])
             print('targets=', targets)
             for name, param in net.named_parameters():
-                if name == 'features.0.weight':
+                if name == 'module.features.0.weight':
                     print('name=', name)
                     print(param.grad[:10, 0, 0, 0])
 
@@ -85,8 +87,8 @@ def aver_grad_1D(trainloader, net, optimizer, criterion):
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
 
-        # progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-        #              % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                     % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
         grads = concat_param_grad(net)
         if grads_sum is None:
@@ -124,7 +126,7 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
             print('inputs=', inputs[0:10, 0, 0, 0])
             print('targets=', targets)
             for name, param in net.named_parameters():
-                if name == 'features.0.weight':
+                if name == 'module.features.0.weight':
                     print('name=', name)
                     print(param.grad[:10, 0, 0, 0])
 
@@ -133,8 +135,8 @@ def aver_grad_net(trainloader, net, optimizer, criterion):
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
 
-        # progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-        #              % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                     % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
         for name, param in net.named_parameters():
             # print('name=', name)
@@ -215,12 +217,12 @@ if __name__ == "__main__":
     print('grad_1D.shape=', grad_1D.shape)
 
     #check if the names are in the same order: YES. same.
-    # print('keys:')
-    # for name in grad_net.keys():
-    #     print(name)
-    # print('named params')
-    # for name, param in net.named_parameters():
-    #     print(name)
+    print('keys:')
+    for name in grad_net.keys():
+        print(name)
+    print('named params')
+    for name, param in net.named_parameters():
+        print(name)
 
     #why the two gradients are Still different????
     grads = cat_net_param_1D(grad_net)
