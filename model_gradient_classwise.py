@@ -21,10 +21,7 @@ from utils import progress_bar
 from torch.nn.utils import parameters_to_vector as to_vector
 from measure_cross_class_distances import get_train_cats
 from model_gradient import concat_param_grad, aver_grad_1D
-from main import classes
-
-
-device = 'cuda'
+from main import classes, device
 
 def save_objects_of_class(data_loader, label):
     print(data_loader)
@@ -87,13 +84,11 @@ if __name__ == "__main__":
 
         # Data
         print('==> Preparing data..')
-        # transform_train = transforms.Compose([
-        #     transforms.RandomCrop(32, padding=4),
-        #     transforms.RandomHorizontalFlip(),
-        #     transforms.ToTensor(),
-        #     transforms.Normalize((0.4914, 0.4822, 0.4465),
-        #                          (0.2023, 0.1994, 0.2010)),
-        # ])
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465),
+                                 (0.2023, 0.1994, 0.2010)),
+        ])
 
         # trainset = torchvision.datasets.CIFAR10(
         #     root='./data', train=True, download=True, transform=transform_train)
@@ -105,12 +100,12 @@ if __name__ == "__main__":
 
         #so here I used a solution that first retrieve from the dataloader, save, and then load; this guarantees using the same transformed data as trainloader
 
-        trainset = CIFAR10(root='./data', train=True, transform=transform_train, download=True)
+        trainset = CIFAR10(root='./data', train=True, transform=transform_test, download=True)
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=4096, shuffle=True, num_workers=2)
 
         #this is just one time running.
-        # save_objects_all_classes(trainloader)
-        # sys.exit(1)
+        save_objects_all_classes(trainloader)
+        sys.exit(1)
 
         # train_cls = dataset_cls(label=3)
         # train_cls_loader = torch.utils.data.DataLoader(train_cls, batch_size=1000, shuffle=True, num_workers=2)

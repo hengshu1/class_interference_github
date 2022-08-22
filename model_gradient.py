@@ -234,14 +234,15 @@ if __name__ == "__main__":
 
     #todo: switch order grads change! why? It is influenced by aver_grad_1D
 
-    print('aver_grad_net')
-    grad_net = aver_grad_net(trainloader, net, optimizer, criterion)
-
-    print('@@@@')
-
     print('aver_grad_1D')
     grad_1D = aver_grad_1D(trainloader, net, optimizer, criterion)
     print('grad_1D.shape=', grad_1D.shape)
+
+    print('@@@@')
+
+    print('aver_grad_net')
+    grad_net = aver_grad_net(trainloader, net, optimizer, criterion)
+
 
     #check if the names are in the same order: YES. same.
     # print('keys:')
