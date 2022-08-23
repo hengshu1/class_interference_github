@@ -62,8 +62,10 @@ if __name__ == "__main__":
     optimizer = optim.SGD(w_star.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
 
     alpha = args.lr
-    theta1s = np.linspace(0, alpha, 10)
-    # theta1s = np.linspace(0, alpha, 5)
+
+    # theta1s = np.linspace(0, alpha, 10)#high resolution loss contour
+    theta1s = np.linspace(0, alpha, 5)#low resolutions
+
     theta1s_neg = -theta1s[1:]
     theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
     print('theta1s=', theta1s)
