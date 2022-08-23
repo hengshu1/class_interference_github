@@ -4,9 +4,9 @@ from matplotlib import cm
 from main import classes
 import sys
 
-c1, c2 = 3, 5#CAT DOG
+# c1, c2 = 3, 5#CAT DOG
 # c1, c2 = 1, 9  # CAR TRUCK
-# c1, c2 = 7, 8  # Horse Ship
+c1, c2 = 7, 8  # Horse Ship
 
 
 
@@ -19,7 +19,7 @@ c1, c2 = 3, 5#CAT DOG
 
 
 #Resnet18
-limit_theta = 0.01
+limit_theta = 0.1#0.02
 model_path = 'results/model_resnet18_alpha_' + str(0.01) + '_momentum_decayed'
 print(model_path)
 file = model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy'
@@ -32,8 +32,8 @@ losses = np.load(file)
 losses =  100 - losses
 
 #X and Y plane: The loss was two-loop. outside is theta1 fixed. theta2 changes. So theta1 is y. c1 is y.
-# theta1s = np.linspace(0, limit_theta, 10)
-theta1s = np.linspace(0, limit_theta, 5)
+theta1s = np.linspace(0, limit_theta, 10)
+# theta1s = np.linspace(0, limit_theta, 5)
 theta1s_neg = -theta1s[1:]
 theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
 print('theta1s=', theta1s)
@@ -55,7 +55,7 @@ ha = hf.add_subplot(111, projection='3d')
 # X, Y = np.meshgrid(x, y)
 X, Y = np.meshgrid(theta1s, theta2s)
 # ha.plot_surface(X, Y, losses, cmap=cm.hsv)
-ha.plot_surface(X, Y, losses, cmap=cm.jet,  edgecolor='darkred', linewidth=0.1)
+ha.plot_surface(X, Y, losses, cmap=cm.jet,  edgecolor='darkred', linewidth=0.1, rstride=1, cstride=1)
 plt.xlabel(classes[c2] + ' ego direction')
 plt.ylabel(classes[c1] + ' ego direction')
 ha.set_zlabel('100 - training accuracy')
