@@ -68,8 +68,12 @@ if __name__ == "__main__":
     theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
     print('theta1s=', theta1s)
 
-    cat_grad = pickle.load(open(model_path + '_grad_' + classes[3] + '.pkl', "rb"))
-    dog_grad = pickle.load(open(model_path + '_grad_' + classes[5] + '.pkl', "rb"))
+
+    # c1, c2 = 3, 5#CAT DOG
+    c1, c2 = 3, 0#CAT PLANE
+
+    c1_grad = pickle.load(open(model_path + '_grad_' + classes[c1] + '.pkl', "rb"))
+    c2_grad = pickle.load(open(model_path + '_grad_' + classes[c2] + '.pkl', "rb"))
 
     # print('type(cat_grad)=', type(cat_grad))
     # print('cat_grad=', cat_grad)
@@ -98,15 +102,15 @@ if __name__ == "__main__":
                 print('----j=', j)
                 w = copy.deepcopy(w_star)
                 for name, param in w.named_parameters():
-                    param.add_(cat_grad[name], alpha=-theta1)
-                    param.add_(dog_grad[name], alpha=-theta2)
+                    param.add_(c1_grad[name], alpha=-theta1)
+                    param.add_(c2_grad[name], alpha=-theta2)
                 #todo check if the w changes
 
                 #evaluate w
                 losses[i, j] = train_loss(w, trainloader)
                 print('loss=', losses[i, j])
 
-    np.save(model_path+'_cat_dog_egomodels_loss.npy', np.array(losses))
+    np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss.npy', np.array(losses))
     print('losses=', losses)
 
 
