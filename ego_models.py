@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
     print('loading model at path:', model_path)
     w_star.load_state_dict(torch.load(model_path+'.pyc'))
-    print(w_star)
+    # print(w_star)
 
     criterion = nn.CrossEntropyLoss()  # by default. it's mean.
     optimizer = optim.SGD(w_star.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
@@ -72,7 +72,10 @@ if __name__ == "__main__":
 
 
     # c1, c2 = 3, 5#CAT DOG
-    c1, c2 = 3, 0#CAT PLANE
+    # c1, c2 = 3, 0#CAT PLANE
+    # c1, c2 = 3, 1#CAT CAR
+    # c1, c2 = 1, 9 #CAR TRUCK
+    c1, c2 = 7, 8  # Horse Ship
 
     c1_grad = pickle.load(open(model_path + '_grad_' + classes[c1] + '.pkl', "rb"))
     c2_grad = pickle.load(open(model_path + '_grad_' + classes[c2] + '.pkl', "rb"))

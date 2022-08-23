@@ -4,7 +4,9 @@ from main import classes
 import sys
 
 # c1, c2 = 3, 5#CAT DOG
-c1, c2 = 3, 0#CAT PLANE
+# c1, c2 = 3, 0#CAT PLANE
+# c1, c2 = 3, 1  # CAT CAR
+c1, c2 = 7, 8  # Horse Ship
 
 model_path = 'results/model_vgg_sgd_alpha_' + str(0.01)
 file = model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss.npy'
@@ -27,8 +29,8 @@ print(losses.shape)
 plt.imshow(losses, interpolation='none')
 # plt.xticks(list(range(losses.shape[0])), theta1s)
 # plt.yticks(list(range(losses.shape[1])), theta1s)
-plt.xlabel('in ' + classes[c2] + ' ego direction')
-plt.ylabel('in '  + classes[c1] + ' ego direction')
+plt.xlabel(classes[c2] + ' ego direction')
+plt.ylabel(classes[c1] + ' ego direction')
 
 hf = plt.figure(2)
 ha = hf.add_subplot(111, projection='3d')
@@ -37,8 +39,8 @@ ha = hf.add_subplot(111, projection='3d')
 # X, Y = np.meshgrid(x, y)
 X, Y = np.meshgrid(theta1s, theta2s)
 ha.plot_surface(X, Y, losses)
-plt.xlabel('in ' + classes[c2] + ' ego direction')
-plt.ylabel('in '  + classes[c1] + ' ego direction')
+plt.xlabel(classes[c2] + ' ego direction')
+plt.ylabel(classes[c1] + ' ego direction')
 ha.set_zlabel('f(training loss)')
 plt.show()
 
