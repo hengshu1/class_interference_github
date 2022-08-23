@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pylab as plt
 from main import classes
+import sys
 
 # c1, c2 = 3, 5#CAT DOG
 c1, c2 = 3, 0#CAT PLANE
@@ -11,7 +12,7 @@ print('loading file ', file)
 
 losses = np.load(file)
 
-#X and Y plane
+#X and Y plane: The loss was two-loop. outside is theta1 fixed. theta2 changes. So theta1 is y. c1 is y.
 alpha = 0.01
 # theta1s = np.linspace(0, alpha, 10)
 theta1s = np.linspace(0, alpha, 5)
@@ -21,12 +22,13 @@ print('theta1s=', theta1s)
 theta2s = theta1s
 
 plt.figure(1)
+print(losses)
 print(losses.shape)
 plt.imshow(losses, interpolation='none')
-plt.xticks(list(range(losses.shape[0])), theta1s)
-plt.yticks(list(range(losses.shape[1])), theta1s)
-plt.xlabel('in ' + classes[c1] + ' ego direction')
-plt.ylabel('in '  + classes[c2] + ' ego direction')
+# plt.xticks(list(range(losses.shape[0])), theta1s)
+# plt.yticks(list(range(losses.shape[1])), theta1s)
+plt.xlabel('in ' + classes[c2] + ' ego direction')
+plt.ylabel('in '  + classes[c1] + ' ego direction')
 
 hf = plt.figure(2)
 ha = hf.add_subplot(111, projection='3d')
@@ -35,8 +37,8 @@ ha = hf.add_subplot(111, projection='3d')
 # X, Y = np.meshgrid(x, y)
 X, Y = np.meshgrid(theta1s, theta2s)
 ha.plot_surface(X, Y, losses)
-plt.xlabel('in ' + classes[c1] + ' ego direction')
-plt.ylabel('in '  + classes[c2] + ' ego direction')
+plt.xlabel('in ' + classes[c2] + ' ego direction')
+plt.ylabel('in '  + classes[c1] + ' ego direction')
 ha.set_zlabel('f(training loss)')
 plt.show()
 
