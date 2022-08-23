@@ -101,10 +101,9 @@ if __name__ == "__main__":
 
         #so here I used a solution that first retrieve from the dataloader, save, and then load; this guarantees using the same transformed data as trainloader
 
-        trainset = CIFAR10(root='./data', train=True, transform=transform_test, download=True)
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=4096, shuffle=False, num_workers=2)
-
         #this is just one time running.
+        # trainset = CIFAR10(root='./data', train=True, transform=transform_test, download=True)
+        # trainloader = torch.utils.data.DataLoader(trainset, batch_size=4096, shuffle=False, num_workers=2)
         # save_objects_all_classes(trainloader)
         # sys.exit(1)
 
@@ -142,7 +141,7 @@ if __name__ == "__main__":
             grad_net = aver_grad_net(trainloader_cls, net, optimizer, criterion)
 
             f = open(model_path+'_grad_'+classes[cl]+'.pkl', "wb")
-            pickle.dump(dict, f)
+            pickle.dump(grad_net, f)
             f.close()
 
 

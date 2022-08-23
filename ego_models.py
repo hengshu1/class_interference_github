@@ -41,13 +41,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
     parser.add_argument('--lr', default=0.01,
                         type=float, help='learning rate')
+    parser.add_argument('--batchsize', default=4096*2, type=int, help='batch size')
     parser.add_argument('--resume', '-r', action='store_true',
                         help='resume from checkpoint')
     args = parser.parse_args()
 
     print('@@lr=', args.lr)
+    print('@@batchsize=', args.batchsize)
 
     w_star = VGG('VGG19')
+    w_star = torch.nn.DataParallel(w_star)
 
     model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
@@ -58,8 +61,19 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()  # by default. it's mean.
     optimizer = optim.SGD(w_star.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
 
+    alpha = args.lr
+    theta1s = np.linspace(0, alpha, 10)
+    # theta1s = np.linspace(0, alpha, 5)
+    theta1s_neg = -theta1s[1:]
+    theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
+    print('theta1s=', theta1s)
+
     cat_grad = pickle.load(open(model_path + '_grad_' + classes[3] + '.pkl', "rb"))
     dog_grad = pickle.load(open(model_path + '_grad_' + classes[5] + '.pkl', "rb"))
+
+    # print('type(cat_grad)=', type(cat_grad))
+    # print('cat_grad=', cat_grad)
+    # sys.exit(1)
 
     #Data
     transform_test = transforms.Compose([
@@ -74,21 +88,25 @@ if __name__ == "__main__":
     loss_star = train_loss(w_star, trainloader)
     print('loss_star=', loss_star)
 
-    alpha = args.lr
-    theta1s = [0, 1e-3, 1e-1]#[1e-5, 1e-4, 0.001, 0.01, 0.1, 1.0]#xrange
     theta2s = theta1s
-    losses = -np.ones(len(theta1s), len(theta2s))
-    for i, theta1 in enumerate(theta1s):
-        for j, theta2 in enumerate(theta2s):
-            w = copy.deepcopy(w_star)
-            for name, param in w.named_parameters():
-                param.add_(cat_grad[name], alpha=-theta1)
-                param.add_(dog_grad[name], alpha=-theta2)
-            #todo check if the w changes
+    losses = -np.ones((len(theta1s), len(theta2s)))
 
-            #evaluate w
-            losses[i, j] = train_loss(w, trainloader)
+    with torch.no_grad():
+        for i, theta1 in enumerate(theta1s):
+            print('####i=', i)
+            for j, theta2 in enumerate(theta2s):
+                print('----j=', j)
+                w = copy.deepcopy(w_star)
+                for name, param in w.named_parameters():
+                    param.add_(cat_grad[name], alpha=-theta1)
+                    param.add_(dog_grad[name], alpha=-theta2)
+                #todo check if the w changes
 
+                #evaluate w
+                losses[i, j] = train_loss(w, trainloader)
+                print('loss=', losses[i, j])
+
+    np.save(model_path+'_cat_dog_egomodels_loss.npy', np.array(losses))
     print('losses=', losses)
 
 
