@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 print('loss=', losses[i, j])
 
     # np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss_bigger_range.npy', np.array(losses))
-    np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_limit_theta+' + str(limit_theta) + '.npy', np.array(losses))
+    np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy', np.array(losses))
     print('losses=', losses)
 
 
