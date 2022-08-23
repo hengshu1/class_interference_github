@@ -39,8 +39,13 @@ def train_loss(net, data_loader):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-    parser.add_argument('--lr', default=0.01,
-                        type=float, help='learning rate')
+
+    #constant lr experiment
+    parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
+
+    #lr scheduling experiment used alpha_0 = 0.1 for initial lr
+    # parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+
     parser.add_argument('--batchsize', default=4096*2, type=int, help='batch size')
     parser.add_argument('--resume', '-r', action='store_true',
                         help='resume from checkpoint')
@@ -49,23 +54,30 @@ if __name__ == "__main__":
     print('@@lr=', args.lr)
     print('@@batchsize=', args.batchsize)
 
-    w_star = VGG('VGG19')
+    #w_star = VGG('VGG19')
+    w_star = ResNet18()
+
     w_star = torch.nn.DataParallel(w_star)
 
-    model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
+    # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
+    # model_path = 'results/model_resnet18_annealing_alpha_' + str(args.lr)
+    model_path = 'results/model_resnet18_alpha_' + str(args.lr) + '_momentum_decayed'
+
     print('loading model at path:', model_path)
     w_star.load_state_dict(torch.load(model_path+'.pyc'))
     # print(w_star)
 
+    # optimizer = optim.SGD(w_star.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
+    optimizer = optim.SGD(w_star.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
+
     criterion = nn.CrossEntropyLoss()  # by default. it's mean.
-    optimizer = optim.SGD(w_star.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
 
-    alpha = args.lr
+    limit_theta = 0.01
 
-    # theta1s = np.linspace(0, alpha, 10)#high resolution loss contour
-    # theta1s = np.linspace(0, alpha, 5)#low resolutions
-    theta1s = np.linspace(0, alpha*10, 5)
+    #oh. I found constant lr=0.01 leads to a much sharp minima in the interference space; while lr=0.1 with scheduling it is much more flat
+    # theta1s = np.linspace(0, limit_theta, 10)#high resolution loss contour
+    theta1s = np.linspace(0, limit_theta, 5)#low resolutions
 
     theta1s_neg = -theta1s[1:]
     theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
@@ -73,10 +85,8 @@ if __name__ == "__main__":
 
 
     # c1, c2 = 3, 5#CAT DOG
-    # c1, c2 = 3, 0#CAT PLANE
-    # c1, c2 = 3, 1#CAT CAR
-    c1, c2 = 1, 9 #CAR TRUCK
-    # c1, c2 = 7, 8  # Horse Ship
+    # c1, c2 = 1, 9 #CAR TRUCK
+    c1, c2 = 7, 8  # Horse Ship
 
     c1_grad = pickle.load(open(model_path + '_grad_' + classes[c1] + '.pkl', "rb"))
     c2_grad = pickle.load(open(model_path + '_grad_' + classes[c2] + '.pkl', "rb"))
@@ -117,7 +127,7 @@ if __name__ == "__main__":
                 print('loss=', losses[i, j])
 
     # np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss_bigger_range.npy', np.array(losses))
-    np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_bigger_range.npy', np.array(losses))
+    np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_limit_theta+' + str(limit_theta) + '.npy', np.array(losses))
     print('losses=', losses)
 
 

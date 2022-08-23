@@ -77,7 +77,7 @@ def evaluate_f():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-    parser.add_argument('--lr', default=0.001,
+    parser.add_argument('--lr', default=0.1,
                         type=float, help='learning rate')
     parser.add_argument('--batchsize', default=128,
                         type=int, help='batch size')
@@ -121,8 +121,8 @@ if __name__ == "__main__":
         testset, batch_size=100, shuffle=False, num_workers=2)
     # Models
     print('==> Building model..')
-    net = VGG('VGG19')
-    # net = ResNet18()
+    # net = VGG('VGG19')
+    net = ResNet18()
     # net = PreActResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
@@ -154,25 +154,30 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
 
     # first do without momentum
-    optimizer = optim.SGD(net.parameters(), lr=args.lr,
-                          momentum=0, weight_decay=0)
-    # optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
-    # removing annealing
+    # optimizer = optim.SGD(net.parameters(), lr=args.lr,
+    #                       momentum=0, weight_decay=0)
+    optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
+    # removing annealing for SGD with constant step-size experiment
     # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
-    f_loss = []
+    # f_loss = []
     # torch.save(net.state_dict(), 'results/model0_vgg_sgd_alpha_'+str(args.lr)+'.pyc')#initial model
-    for epoch in range(start_epoch, start_epoch+300):
+    for epoch in range(start_epoch, start_epoch+200):
         train(epoch)
         test(epoch)
-        f_e = evaluate_f()
-        f_loss.append(f_e)
+        # f_e = evaluate_f()
+        # f_loss.append(f_e)
+        # scheduler.step()
 
-    f_loss = np.array(f_loss)
+    # f_loss = np.array(f_loss)
     # file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'.npy'
-    file_name = 'results/f_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024.npy'
-    np.save(file_name, f_loss)
+    # file_name = 'results/f_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024.npy'
+    # file_name = 'results/f_resnet18_sgd_annealing_alpha'+str(args.lr)+'.npy'
+    # np.save(file_name, f_loss)
 
-    # torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')s
+    # torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')
     # torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'
     #            + str(args.lr)+'_batchsize1024.pyc')
+
+    # torch.save(net.state_dict(), 'results/model_resnet18_annealing_alpha_'+str(args.lr)+'.pyc')
+    torch.save(net.state_dict(), 'results/model_resnet18_alpha_'+str(args.lr)+'_momentum_decayed'+'.pyc')

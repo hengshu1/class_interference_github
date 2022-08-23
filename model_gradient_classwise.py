@@ -71,14 +71,22 @@ if __name__ == "__main__":
     random.seed(1)
 
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+
+    #for sgd for constant lr
     parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
+
+    #for loading lr scheduling model
+    # parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+
     parser.add_argument('--resume', '-r', action='store_true',
                         help='resume from checkpoint')
     args = parser.parse_args()
 
     print('@@lr=', args.lr)
 
-    net = VGG('VGG19')
+    #net = VGG('VGG19')
+    net = ResNet18()
+
     net = net.to(device)
     if device == 'cuda':
         cudnn.benchmark = True
@@ -115,14 +123,20 @@ if __name__ == "__main__":
 
         net = torch.nn.DataParallel(net)
 
-        model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
+        # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
         # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024'
+        # model_path = 'results/model_resnet18_annealing_alpha_'+str(args.lr)
+        model_path = 'results/model_resnet18_alpha_'+str(args.lr) + '_momentum_decayed'
         print('loading model at path:', model_path)
         net.load_state_dict(torch.load(model_path+'.pyc'))
+        # sys.exit(1)
         # print(net)
 
         criterion = nn.CrossEntropyLoss(reduction='sum')  # by default. it's mean.
-        optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
+
+        # todo check the momentum and weight does not matter because we only use the forward prediction and gradient zero; no step()
+        # optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
+        optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 
         #This computes the gradient for each class and saves it
         # grad_cls_norm2 = np.zeros(len(classes))
