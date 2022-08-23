@@ -34,7 +34,7 @@ def train_loss(net, data_loader):
             progress_bar(batch_idx, len(data_loader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (train_loss / (batch_idx + 1), 100. * correct / total, correct, total))
 
-    return train_loss
+    return 100. * correct / total #train_loss #report accuracy for a fixed scale
 
 
 if __name__ == "__main__":
@@ -64,7 +64,8 @@ if __name__ == "__main__":
     alpha = args.lr
 
     # theta1s = np.linspace(0, alpha, 10)#high resolution loss contour
-    theta1s = np.linspace(0, alpha, 5)#low resolutions
+    # theta1s = np.linspace(0, alpha, 5)#low resolutions
+    theta1s = np.linspace(0, alpha*10, 5)
 
     theta1s_neg = -theta1s[1:]
     theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
@@ -74,8 +75,8 @@ if __name__ == "__main__":
     # c1, c2 = 3, 5#CAT DOG
     # c1, c2 = 3, 0#CAT PLANE
     # c1, c2 = 3, 1#CAT CAR
-    # c1, c2 = 1, 9 #CAR TRUCK
-    c1, c2 = 7, 8  # Horse Ship
+    c1, c2 = 1, 9 #CAR TRUCK
+    # c1, c2 = 7, 8  # Horse Ship
 
     c1_grad = pickle.load(open(model_path + '_grad_' + classes[c1] + '.pkl', "rb"))
     c2_grad = pickle.load(open(model_path + '_grad_' + classes[c2] + '.pkl', "rb"))
@@ -115,7 +116,8 @@ if __name__ == "__main__":
                 losses[i, j] = train_loss(w, trainloader)
                 print('loss=', losses[i, j])
 
-    np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss.npy', np.array(losses))
+    # np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss_bigger_range.npy', np.array(losses))
+    np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_bigger_range.npy', np.array(losses))
     print('losses=', losses)
 
 
