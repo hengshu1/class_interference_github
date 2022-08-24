@@ -78,13 +78,11 @@ if __name__ == "__main__":
     random.seed(1)
 
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-
-    #for sgd for constant lr
     parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
     parser.add_argument('--model', default='VGG19', type=str, help='model name')
     parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
-
     args = parser.parse_args()
+
     args.model = args.model.lower()
     args.lr_mode = args.lr_mode.lower()
 
@@ -103,7 +101,6 @@ if __name__ == "__main__":
     net = net.to(device)
     if device == 'cuda':
         cudnn.benchmark = True
-
         # Data
         print('==> Preparing data..')
         transform_test = transforms.Compose([
@@ -111,10 +108,8 @@ if __name__ == "__main__":
             transforms.Normalize((0.4914, 0.4822, 0.4465),
                                  (0.2023, 0.1994, 0.2010)),
         ])
-
         # trainset = torchvision.datasets.CIFAR10(
         #     root='./data', train=True, download=True, transform=transform_train)
-
         #It appears data transform is applied in dataloader, not in the CIFAR: transform has no effect here yet
         # trainset = CIFAR10(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         #However, on MNIST, the data transform is effective in the dataset already.
@@ -135,13 +130,6 @@ if __name__ == "__main__":
         #     print('inputs.shape=', inputs.shape)
 
         net = torch.nn.DataParallel(net)
-
-        # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
-        # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024'
-        # model_path = 'results/model_vgg19_alpha_'+str(args.lr) + '_momentum_decayed'
-        # model_path = 'results/model_resnet18_annealing_alpha_'+str(args.lr)
-        # model_path = 'results/model_resnet18_alpha_'+str(args.lr) + '_momentum_decayed'
-
         model_path = find_model_file('results/', args.model, args.lr, args.lr_mode)
 
         print('loading model at path:', model_path)
