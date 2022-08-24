@@ -63,6 +63,8 @@ def test(epoch):
             progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
+    return 100.*correct/total
+
 
 def evaluate_f():
     '''evaluate the loss on the whole training dataset: no training. '''
@@ -81,16 +83,19 @@ if __name__ == "__main__":
                         type=float, help='learning rate')
     parser.add_argument('--batchsize', default=128,
                         type=int, help='batch size')
+    parser.add_argument('--model', default='VGG19', type=str, help='model name')
+    parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
     parser.add_argument('--resume', '-r', action='store_true',
                         help='resume from checkpoint')
     args = parser.parse_args()
 
     print('@@lr=', args.lr)
     print('@@batchsize=', args.batchsize)
+    args.lr_mode=args.lr_mode.lower()
+    print('lr mode=', args.lr_mode)
 
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
-
     # Data
     print('==> Preparing data..')
     transform_train = transforms.Compose([
@@ -121,8 +126,17 @@ if __name__ == "__main__":
         testset, batch_size=100, shuffle=False, num_workers=2)
     # Models
     print('==> Building model..')
-    net = VGG('VGG19')
-    # net = ResNet18()
+
+    args.model=args.model.lower()
+    print('running model:', args.model)
+
+    if args.model=='vgg19':
+        net = VGG('VGG19')
+    elif args.model=='resnet18':
+        net = ResNet18()
+    else:
+        print('not run yet')
+        sys.exit(1)
     # net = PreActResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
@@ -153,21 +167,25 @@ if __name__ == "__main__":
 
     criterion = nn.CrossEntropyLoss()
 
-    # first do without momentum
-    # optimizer = optim.SGD(net.parameters(), lr=args.lr,
-    #                       momentum=0, weight_decay=0)
     optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
-    # removing annealing for SGD with constant step-size experiment
-    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+
+    if args.lr_mode == 'constant' or args.lr_mode == 'fixed':
+        scheduler = None
+    elif args.lr_mode=='schedule' or args.lr_mode=='anneal':
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    else:
+        print('lr mode not supported this yet. ')
 
     # f_loss = []
     # torch.save(net.state_dict(), 'results/model0_vgg_sgd_alpha_'+str(args.lr)+'.pyc')#initial model
+    acc_test = -1.0
     for epoch in range(start_epoch, start_epoch+200):
         train(epoch)
-        test(epoch)
+        acc_test = test(epoch)
         # f_e = evaluate_f()
         # f_loss.append(f_e)
-        # scheduler.step()
+        if args.lr_mode=='schedule' or args.lr_mode=='anneal':
+            scheduler.step()
 
     # f_loss = np.array(f_loss)
     # file_name='results/f_vgg_sgd_alpha_'+str(args.lr)+'.npy'
@@ -178,8 +196,9 @@ if __name__ == "__main__":
     # torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'+str(args.lr)+'.pyc')
     # torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'
     #            + str(args.lr)+'_batchsize1024.pyc')
-
-    torch.save(net.state_dict(), 'results/model_vgg19_alpha_'+str(args.lr)+'_momentum_decayed'+'.pyc')
+    print('final test acc:', acc_test)
+    torch.save(net.state_dict(), 'results/model_' + args.model+ '_alpha_'+str(args.lr) +
+               '_lrmode_'+ args.lr_mode +'_momentum_decayed_testacc_' + "{:.2f}".format(acc_test, 2)  +'.pyc')
 
     # torch.save(net.state_dict(), 'results/model_resnet18_annealing_alpha_'+str(args.lr)+'.pyc')
-    # torch.save(net.state_dict(), 'results/model_resnet18_alpha_'+str(args.lr)+'_momentum_decayed'+'.pyc')
+
