@@ -25,7 +25,7 @@ print('loading file ', file)
 
 losses = np.load(file)
 #for accuracy on the training error we used percentage of training error
-losses =  100 - losses
+losses = 100 - losses
 
 #X and Y plane: The loss was two-loop. outside is theta1 fixed. theta2 changes. So theta1 is y. c1 is y.
 theta1s = np.linspace(0, limit_theta, 10)
@@ -39,8 +39,8 @@ plt.figure(1)
 print(losses)
 print(losses.shape)
 plt.imshow(losses, interpolation='none')
-plt.xticks([-0.1, -0.05, 0, 0.05, 0.1])
-plt.yticks([-0.1, -0.05, 0, 0.05, 0.1])
+plt.xticks([-limit_theta, -limit_theta/2., 0, limit_theta/2., limit_theta])
+plt.yticks([-limit_theta, -limit_theta/2., 0, limit_theta/2., limit_theta])
 plt.xlabel(classes[c2] + ' ego direction')
 plt.ylabel(classes[c1] + ' ego direction')
 

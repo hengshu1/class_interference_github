@@ -11,7 +11,7 @@ import time
 import sys
 import pickle
 import torch.backends.cudnn as cudnn
-from main import classes, device
+from main import classes,inv_classes, device
 from utils import progress_bar
 
 from model_gradient_classwise import find_model_file
@@ -50,9 +50,6 @@ if __name__ == "__main__":
     parser.add_argument('--c1', default='cat', type=str, help='class name')
     parser.add_argument('--c2', default='dog', type=str, help='class name')
 
-    c1 = inv_classes[args.c1]
-    c2 = inv_classes[args.c2]
-
     parser.add_argument('--resolution', default='low', type=str, help='resolution of the loss contour')
 
 
@@ -88,7 +85,9 @@ if __name__ == "__main__":
     # print(w_star)
 
     print('loading class gradients for classes:')
-    print('c1=', 1, '; c2=', c2)
+    c1 = inv_classes[args.c1.lower()]
+    c2 = inv_classes[args.c2.lower()]
+    print('c1=', c1, '; c2=', c2)
     c1_grad = pickle.load(open(model_path + '_grad_' + classes[c1] + '.pkl', "rb"))
     c2_grad = pickle.load(open(model_path + '_grad_' + classes[c2] + '.pkl', "rb"))
 
