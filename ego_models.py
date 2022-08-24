@@ -49,6 +49,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--c1', default='cat', type=str, help='class name')
     parser.add_argument('--c2', default='dog', type=str, help='class name')
+    parser.add_argument('--limit_theta', default=0.1, type=float, help='limit of theta1/theta')
 
     parser.add_argument('--resolution', default='low', type=str, help='resolution of the loss contour')
 
@@ -60,6 +61,7 @@ if __name__ == "__main__":
     print('@@model=', args.model)
     print('@@lr=', args.lr)
     print('@@lr_mode=', args.lr_mode)
+    print('@@limit_theta=', args.limit_theta)
     # print('@@batchsize=', args.batchsize)
 
     if args.resolution == 'high':
@@ -95,11 +97,11 @@ if __name__ == "__main__":
 
     criterion = nn.CrossEntropyLoss()  # by default. it's mean.
 
-    limit_theta = 0.1
+
 
     #oh. I found constant lr=0.01 leads to a much sharp minima in the interference space; while lr=0.1 with scheduling it is much more flat
 
-    theta1s = np.linspace(0, limit_theta, sigma_points)
+    theta1s = np.linspace(0, args.limit_theta, sigma_points)
 
     theta1s_neg = -theta1s[1:]
     theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
@@ -136,7 +138,7 @@ if __name__ == "__main__":
                 acc[i, j] = train_accuracy(w, trainloader)
                 print('accuracy=', acc[i, j])
 
-    np.save(model_path +'_' + args.c1 + '_' + args.c2 +'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy', np.array(acc))
+    np.save(model_path +'_' + args.c1 + '_' + args.c2 +'_egomodels_acc_limit_theta' + str(args.limit_theta) + '.npy', np.array(acc))
     print('accuracy=', acc)
 
 
