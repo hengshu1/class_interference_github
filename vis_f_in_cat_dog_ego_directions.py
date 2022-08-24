@@ -5,25 +5,21 @@ from main import classes
 import sys
 
 # c1, c2 = 3, 5#CAT DOG
-# c1, c2 = 1, 9  # CAR TRUCK
-c1, c2 = 7, 8  # Horse Ship
+c1, c2 = 1, 9  # CAR TRUCK
+# c1, c2 = 7, 8  # Horse Ship
 
-
+limit_theta = 0.1
 
 #VGG
-# model_path = 'results/model_vgg_sgd_alpha_' + str(0.01)
-# file = model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss.npy'
-# file = model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss_bigger_range.npy'
-# file = model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_bigger_range.npy'
-# file = model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy'
-
+# model = 'VGG19'
 
 #Resnet18
-limit_theta = 0.1#0.02
-model_path = 'results/model_resnet18_alpha_' + str(0.01) + '_momentum_decayed'
+model = 'resnet18'
+
+
+model_path = 'results/model_' + model + '_alpha_' + str(0.01) + '_momentum_decayed'
 print(model_path)
 file = model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy'
-
 
 print('loading file ', file)
 
