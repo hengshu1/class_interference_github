@@ -86,8 +86,8 @@ if __name__ == "__main__":
     print('theta1s=', theta1s)
 
     # c1, c2 = 3, 5#CAT DOG
-    c1, c2 = 1, 9 #CAR TRUCK
-    # c1, c2 = 7, 8  # Horse Ship
+    # c1, c2 = 1, 9 #CAR TRUCK
+    c1, c2 = 7, 8  # Horse Ship
 
     c1_grad = pickle.load(open(model_path + '_grad_' + classes[c1] + '.pkl', "rb"))
     c2_grad = pickle.load(open(model_path + '_grad_' + classes[c2] + '.pkl', "rb"))
