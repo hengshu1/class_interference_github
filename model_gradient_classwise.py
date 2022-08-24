@@ -5,7 +5,7 @@ from models import *
 import torch.optim as optim
 import numpy as np
 import copy
-import time, sys, os, re
+import time, sys, glob
 import torch.backends.cudnn as cudnn
 
 from torchvision.datasets import MNIST, CIFAR10
@@ -66,11 +66,11 @@ def train_loader_class(label):
     return torch.utils.data.DataLoader(dataset, batch_size=1000, shuffle=True, num_workers=2)
 
 def find_model_file(path, model, lr, lr_mode):
-    '''assume only one model starting with this header pattern'''
-    for filename in os.listdir(path):
-        pattern = 'model_' + model + '_alpha_' + str(lr) + '_lrmode_' + lr_mode + '_momentum_decayed_testacc_*'
-        if re.match(pattern, filename):
-            return path+filename
+    '''path needs / in the end'''
+    '''using the first model starting with this header pattern'''
+    pattern = path+'model_' + model + '_alpha_' + str(lr) + '_lrmode_' + lr_mode + '_momentum_decayed_testacc_??.??.pyc'
+    for filename in glob.glob(pattern):
+        return filename
     return None
 
 if __name__ == "__main__":
@@ -81,20 +81,24 @@ if __name__ == "__main__":
 
     #for sgd for constant lr
     parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
-
     parser.add_argument('--model', default='VGG19', type=str, help='model name')
     parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
 
-    parser.add_argument('--resume', '-r', action='store_true',
-                        help='resume from checkpoint')
     args = parser.parse_args()
     args.model = args.model.lower()
     args.lr_mode = args.lr_mode.lower()
 
+    print('@@model=', args.model)
     print('@@lr=', args.lr)
+    print('@@lr_mode=', args.lr_mode)
 
-    net = VGG('VGG19')
-    # net = ResNet18()
+    if args.model == 'vgg19':
+        net = VGG('VGG19')
+    elif args.model == 'resnet18':
+        net = ResNet18()
+    else:
+        print('not run yet')
+        sys.exit(1)
 
     net = net.to(device)
     if device == 'cuda':
@@ -148,7 +152,6 @@ if __name__ == "__main__":
         criterion = nn.CrossEntropyLoss(reduction='sum')  # by default. it's mean.
 
         # todo check the momentum and weight does not matter because we only use the forward prediction and gradient zero; no step()
-        # optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
         optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 
         #This computes the gradient for each class and saves it

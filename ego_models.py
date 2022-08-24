@@ -14,6 +14,8 @@ import torch.backends.cudnn as cudnn
 from main import classes, device
 from utils import progress_bar
 
+from model_gradient_classwise import find_model_file
+
 def train_loss(net, data_loader):
     '''data_loader is the training data without transform'''
     net.eval()
@@ -40,34 +42,42 @@ def train_loss(net, data_loader):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 
-    #constant lr experiment
     parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
-
-    #lr scheduling experiment used alpha_0 = 0.1 for initial lr
-    # parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
-
+    parser.add_argument('--model', default='VGG19', type=str, help='model name')
+    parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
     parser.add_argument('--batchsize', default=4096*2, type=int, help='batch size')
-    parser.add_argument('--resume', '-r', action='store_true',
-                        help='resume from checkpoint')
+
     args = parser.parse_args()
+    args.model = args.model.lower()
+    args.lr_mode = args.lr_mode.lower()
 
+    print('@@model=', args.model)
     print('@@lr=', args.lr)
-    print('@@batchsize=', args.batchsize)
+    print('@@lr_mode=', args.lr_mode)
+    # print('@@batchsize=', args.batchsize)
 
-    w_star = VGG('VGG19')
-    # w_star = ResNet18()
+    if args.model == 'vgg19':
+        net = VGG('VGG19')
+    elif args.model == 'resnet18':
+        net = ResNet18()
+    else:
+        print('not run yet')
+        sys.exit(1)
 
-    w_star = torch.nn.DataParallel(w_star)
+    if args.model == 'vgg19':
+        net = VGG('VGG19')
+    elif args.model == 'resnet18':
+        net = ResNet18()
+    else:
+        print('not run yet')
+        sys.exit(1)
 
-    # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
-    # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
-    model_path = 'results/model_vgg19_alpha_' + str(args.lr) + '_momentum_decayed'
-    # model_path = 'results/model_resnet18_annealing_alpha_' + str(args.lr)
-    # model_path = 'results/model_resnet18_alpha_' + str(args.lr) + '_momentum_decayed'
+    w_star = torch.nn.DataParallel(net)
 
+    model_path = find_model_file('results/', args.model, args.lr, args.lr_mode)
 
     print('loading model at path:', model_path)
-    w_star.load_state_dict(torch.load(model_path+'.pyc'))
+    w_star.load_state_dict(torch.load(model_path))
     # print(w_star)
 
     # optimizer = optim.SGD(w_star.parameters(), lr=args.lr, momentum=0, weight_decay=0)  # vannila SGD
