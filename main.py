@@ -18,7 +18,7 @@ import numpy as np
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 classes = ('plane', 'car', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck')
-
+inv_classes = dict((cl, i) for i, cl in enumerate(classes))
 
 def train(epoch):
     print('\nEpoch: %d' % epoch)

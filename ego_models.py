@@ -46,12 +46,15 @@ if __name__ == "__main__":
     parser.add_argument('--model', default='VGG19', type=str, help='model name')
     parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
     parser.add_argument('--batchsize', default=4096*2, type=int, help='batch size')
-    parser.add_argument('--c1', default=3, type=int, help='class label')
-    parser.add_argument('--c2', default=5, type=int, help='class label')
+
+    parser.add_argument('--c1', default='cat', type=str, help='class name')
+    parser.add_argument('--c2', default='dog', type=str, help='class name')
+
+    c1 = inv_classes[args.c1]
+    c2 = inv_classes[args.c2]
+
     parser.add_argument('--resolution', default='low', type=str, help='resolution of the loss contour')
-    # c1, c2 = 3, 5#CAT DOG
-    # c1, c2 = 1, 9 #CAR TRUCK
-    # c1, c2 = 7, 8  # Horse Ship
+
 
     args = parser.parse_args()
     args.model = args.model.lower()
@@ -85,9 +88,9 @@ if __name__ == "__main__":
     # print(w_star)
 
     print('loading class gradients for classes:')
-    print('c1=', args.c1, '; c2=', args.c2)
-    c1_grad = pickle.load(open(model_path + '_grad_' + classes[args.c1] + '.pkl', "rb"))
-    c2_grad = pickle.load(open(model_path + '_grad_' + classes[args.c2] + '.pkl', "rb"))
+    print('c1=', 1, '; c2=', c2)
+    c1_grad = pickle.load(open(model_path + '_grad_' + classes[c1] + '.pkl', "rb"))
+    c2_grad = pickle.load(open(model_path + '_grad_' + classes[c2] + '.pkl', "rb"))
 
     optimizer = optim.SGD(w_star.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 
@@ -134,7 +137,7 @@ if __name__ == "__main__":
                 acc[i, j] = train_accuracy(w, trainloader)
                 print('accuracy=', acc[i, j])
 
-    np.save(model_path +'_' + classes[args.c1] + '_' + classes[args.c2] +'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy', np.array(acc))
+    np.save(model_path +'_' + args.c1 + '_' + args.c2 +'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy', np.array(acc))
     print('accuracy=', acc)
 
 
