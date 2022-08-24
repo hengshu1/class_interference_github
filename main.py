@@ -121,8 +121,8 @@ if __name__ == "__main__":
         testset, batch_size=100, shuffle=False, num_workers=2)
     # Models
     print('==> Building model..')
-    # net = VGG('VGG19')
-    net = ResNet18()
+    net = VGG('VGG19')
+    # net = ResNet18()
     # net = PreActResNet18()
     # net = GoogLeNet()
     # net = DenseNet121()
@@ -179,5 +179,7 @@ if __name__ == "__main__":
     # torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'
     #            + str(args.lr)+'_batchsize1024.pyc')
 
+    torch.save(net.state_dict(), 'results/model_vgg19_alpha_'+str(args.lr)+'_momentum_decayed'+'.pyc')
+
     # torch.save(net.state_dict(), 'results/model_resnet18_annealing_alpha_'+str(args.lr)+'.pyc')
-    torch.save(net.state_dict(), 'results/model_resnet18_alpha_'+str(args.lr)+'_momentum_decayed'+'.pyc')
+    # torch.save(net.state_dict(), 'results/model_resnet18_alpha_'+str(args.lr)+'_momentum_decayed'+'.pyc')

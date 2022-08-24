@@ -54,15 +54,17 @@ if __name__ == "__main__":
     print('@@lr=', args.lr)
     print('@@batchsize=', args.batchsize)
 
-    #w_star = VGG('VGG19')
-    w_star = ResNet18()
+    w_star = VGG('VGG19')
+    # w_star = ResNet18()
 
     w_star = torch.nn.DataParallel(w_star)
 
     # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
     # model_path = 'results/model_vgg_sgd_alpha_'+str(0.001)+'_batchsize1024'
+    model_path = 'results/model_vgg19_alpha_' + str(args.lr) + '_momentum_decayed'
     # model_path = 'results/model_resnet18_annealing_alpha_' + str(args.lr)
-    model_path = 'results/model_resnet18_alpha_' + str(args.lr) + '_momentum_decayed'
+    # model_path = 'results/model_resnet18_alpha_' + str(args.lr) + '_momentum_decayed'
+
 
     print('loading model at path:', model_path)
     w_star.load_state_dict(torch.load(model_path+'.pyc'))
@@ -73,20 +75,19 @@ if __name__ == "__main__":
 
     criterion = nn.CrossEntropyLoss()  # by default. it's mean.
 
-    limit_theta = 0.01
+    limit_theta = 0.1
 
     #oh. I found constant lr=0.01 leads to a much sharp minima in the interference space; while lr=0.1 with scheduling it is much more flat
-    # theta1s = np.linspace(0, limit_theta, 10)#high resolution loss contour
-    theta1s = np.linspace(0, limit_theta, 5)#low resolutions
+    theta1s = np.linspace(0, limit_theta, 10)#high resolution
+    # theta1s = np.linspace(0, limit_theta, 5)#low resolutions
 
     theta1s_neg = -theta1s[1:]
     theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
     print('theta1s=', theta1s)
 
-
     # c1, c2 = 3, 5#CAT DOG
-    # c1, c2 = 1, 9 #CAR TRUCK
-    c1, c2 = 7, 8  # Horse Ship
+    c1, c2 = 1, 9 #CAR TRUCK
+    # c1, c2 = 7, 8  # Horse Ship
 
     c1_grad = pickle.load(open(model_path + '_grad_' + classes[c1] + '.pkl', "rb"))
     c2_grad = pickle.load(open(model_path + '_grad_' + classes[c2] + '.pkl', "rb"))
@@ -126,7 +127,6 @@ if __name__ == "__main__":
                 losses[i, j] = train_loss(w, trainloader)
                 print('loss=', losses[i, j])
 
-    # np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_loss_bigger_range.npy', np.array(losses))
     np.save(model_path+'_' + classes[c1] + '_'+classes[c2]+'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy', np.array(losses))
     print('losses=', losses)
 

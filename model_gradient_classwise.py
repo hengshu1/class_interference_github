@@ -84,8 +84,8 @@ if __name__ == "__main__":
 
     print('@@lr=', args.lr)
 
-    #net = VGG('VGG19')
-    net = ResNet18()
+    net = VGG('VGG19')
+    # net = ResNet18()
 
     net = net.to(device)
     if device == 'cuda':
@@ -125,8 +125,9 @@ if __name__ == "__main__":
 
         # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
         # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024'
+        model_path = 'results/model_vgg19_alpha_'+str(args.lr) + '_momentum_decayed'
         # model_path = 'results/model_resnet18_annealing_alpha_'+str(args.lr)
-        model_path = 'results/model_resnet18_alpha_'+str(args.lr) + '_momentum_decayed'
+        # model_path = 'results/model_resnet18_alpha_'+str(args.lr) + '_momentum_decayed'
         print('loading model at path:', model_path)
         net.load_state_dict(torch.load(model_path+'.pyc'))
         # sys.exit(1)
