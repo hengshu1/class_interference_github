@@ -5,8 +5,7 @@ from models import *
 import torch.optim as optim
 import numpy as np
 import copy
-import time
-import sys
+import time, sys, os, re
 import torch.backends.cudnn as cudnn
 
 from torchvision.datasets import MNIST, CIFAR10
@@ -66,6 +65,14 @@ def train_loader_class(label):
     dataset = dataset_class(label)
     return torch.utils.data.DataLoader(dataset, batch_size=1000, shuffle=True, num_workers=2)
 
+def find_model_file(path, model, lr, lr_mode):
+    '''assume only one model starting with this header pattern'''
+    for filename in os.listdir(path):
+        pattern = 'model_' + model + '_alpha_' + str(lr) + '_lrmode_' + lr_mode + '_momentum_decayed_testacc_*'
+        if re.match(pattern, filename):
+            return path+filename
+    return None
+
 if __name__ == "__main__":
     torch.manual_seed(0)
     random.seed(1)
@@ -75,12 +82,14 @@ if __name__ == "__main__":
     #for sgd for constant lr
     parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
 
-    #for loading lr scheduling model
-    # parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+    parser.add_argument('--model', default='VGG19', type=str, help='model name')
+    parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
 
     parser.add_argument('--resume', '-r', action='store_true',
                         help='resume from checkpoint')
     args = parser.parse_args()
+    args.model = args.model.lower()
+    args.lr_mode = args.lr_mode.lower()
 
     print('@@lr=', args.lr)
 
@@ -125,11 +134,14 @@ if __name__ == "__main__":
 
         # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)
         # model_path = 'results/model_vgg_sgd_alpha_'+str(args.lr)+'_batchsize1024'
-        model_path = 'results/model_vgg19_alpha_'+str(args.lr) + '_momentum_decayed'
+        # model_path = 'results/model_vgg19_alpha_'+str(args.lr) + '_momentum_decayed'
         # model_path = 'results/model_resnet18_annealing_alpha_'+str(args.lr)
         # model_path = 'results/model_resnet18_alpha_'+str(args.lr) + '_momentum_decayed'
+
+        model_path = find_model_file('results/', args.model, args.lr, args.lr_mode)
+
         print('loading model at path:', model_path)
-        net.load_state_dict(torch.load(model_path+'.pyc'))
+        net.load_state_dict(torch.load(model_path))
         # sys.exit(1)
         # print(net)
 
