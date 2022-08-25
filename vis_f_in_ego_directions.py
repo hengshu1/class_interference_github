@@ -29,14 +29,18 @@ print('c1=', c1, '; c2=', c2)
 
 #todo: this needs to hand change; command line model selection does not work
 # model_path = 'results/model_vgg19_alpha_0.0001_lrmode_constant_momentum_decayed_testacc_84.99.pyc'
-model_path = 'results/model_resnet18_alpha_0.0001_lrmode_constant_momentum_decayed_testacc_86.88.pyc'
-
+# model_path = 'results/model_resnet18_alpha_0.0001_lrmode_constant_momentum_decayed_testacc_86.88.pyc'
+# model_path = 'results/model_resnet18_alpha_0.1_lrmode_anneal_momentum_decayed_testacc_95.15.pyc'
 # model_path = 'results/model_vgg19_alpha_0.01_lrmode_constant_momentum_decayed_testacc_88.76.pyc'
 # model_path = 'results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc'
-print('model_path', model_path)
+# print('model_path', model_path)
 
 limit_theta = args.limit_theta
-file = model_path +'_' + args.c1 + '_' + args.c2 +'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy'
+# file = model_path +'_' + args.c1 + '_' + args.c2 +'_egomodels_acc_limit_theta' + str(limit_theta) + '.npy'
+
+file ='results/model_resnet18_alpha_0.1_lrmode_anneal_momentum_decayed_testacc_95.15.pyc_cat_dog_egomodels_acc_limit_theta1.0.npy'
+# file = 'results/model_resnet18_alpha_0.1_lrmode_anneal_momentum_decayed_testacc_95.15.pyc_car_truck_egomodels_acc_limit_theta1.0.npy'
+# file = 'results/model_resnet18_alpha_0.1_lrmode_anneal_momentum_decayed_testacc_95.15.pyc_horse_ship_egomodels_acc_limit_theta1.0.npy'
 
 print('loading file ', file)
 acc = np.load(file)
