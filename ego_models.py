@@ -58,6 +58,9 @@ if __name__ == "__main__":
     args.model = args.model.lower()
     args.lr_mode = args.lr_mode.lower()
 
+    if args.lr_mode == 'schedule':
+        args.lr_mode = 'anneal'
+
     print('@@model=', args.model)
     print('@@lr=', args.lr)
     print('@@lr_mode=', args.lr_mode)
