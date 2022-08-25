@@ -17,7 +17,10 @@ from utils import progress_bar
 from model_gradient_classwise import find_model_file
 
 def train_accuracy(net, data_loader):
-    '''data_loader is the training data without transform'''
+    '''data_loader is the training data without transform
+    this is to evaluate actually the accuracy on the training dataset
+    thus we need to use net.eval() -- watch for batch normalization surprise.
+    '''
     net.eval()
     train_loss = 0
     total = 0
@@ -39,6 +42,37 @@ def train_accuracy(net, data_loader):
     return 100. * correct / total #train_loss #report accuracy for a fixed scale
 
 
+def train_accuracy_by_class(net, data_loader):
+    net.eval()
+    correct, total = 0, 0
+    train_loss = 0
+    class_correct, class_total = np.zeros(len(classes)), np.zeros(len(classes))
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(data_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = net(inputs)
+            loss = criterion(outputs, targets)
+
+            train_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+
+            for cl in range(len(classes)):
+                index = (targets == cl).nonzero()[:, 0]
+                class_total[cl] += index.size(0)
+                class_correct[cl] = predicted[index].eq(targets[index]).sum().item()
+
+            progress_bar(batch_idx, len(data_loader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                         % (train_loss / (batch_idx + 1), 100. * correct / total, correct, total))
+
+    train_accuracy_class = np.zeros(len(classes))
+    for cl in range(len(classes)):
+        train_accuracy_class[cl] = 100. * class_correct[cl] / class_total[cl]
+        print('@@class ', cl, ', accuracy:', train_accuracy_class[cl])
+    return train_accuracy_class
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 
@@ -46,6 +80,7 @@ if __name__ == "__main__":
     parser.add_argument('--model', default='VGG19', type=str, help='model name')
     parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
     parser.add_argument('--batchsize', default=4096*2, type=int, help='batch size')
+    parser.add_argument('--loss', default='gross', type=str, help='loss on the whole data or class-wise')
 
     parser.add_argument('--c1', default='cat', type=str, help='class name')
     parser.add_argument('--c2', default='dog', type=str, help='class name')
@@ -62,6 +97,7 @@ if __name__ == "__main__":
     print('@@lr=', args.lr)
     print('@@lr_mode=', args.lr_mode)
     print('@@limit_theta=', args.limit_theta)
+    print('@@loss=', args.loss)
     # print('@@batchsize=', args.batchsize)
 
     if args.resolution == 'high':
@@ -121,7 +157,11 @@ if __name__ == "__main__":
     print('acc_star=', acc_star)
 
     theta2s = theta1s
-    acc = -np.ones((len(theta1s), len(theta2s)))
+
+    if args.loss == 'gross':
+        acc = -np.ones((len(theta1s), len(theta2s)))
+    else:
+        acc = -np.ones((len(classes), len(theta1s), len(theta2s)))
 
     with torch.no_grad():
         for i, theta1 in enumerate(theta1s):
@@ -135,11 +175,19 @@ if __name__ == "__main__":
                 #todo check if the w changes
 
                 #evaluate w
-                acc[i, j] = train_accuracy(w, trainloader)
-                print('accuracy=', acc[i, j])
+                if args.loss == 'gross':
+                    acc[i, j] = train_accuracy(w, trainloader)
+                    # print('accuracy=', acc[i, j])
+                else:
+                    acc[:, i,j] = train_accuracy_by_class(w, trainloader)
 
-    np.save(model_path +'_' + args.c1 + '_' + args.c2 +'_egomodels_acc_limit_theta' + str(args.limit_theta) + '.npy', np.array(acc))
-    print('accuracy=', acc)
+    if args.loss == 'gross':
+        print('accuracy=', acc)
+        np.save(model_path +'_' + args.c1 + '_' + args.c2 +'_egomodels_acc_limit_theta' + str(args.limit_theta) + '.npy', np.array(acc))
+    else:
+        np.save(model_path + '_' + args.c1 + '_' + args.c2 + '_egomodels_acc_limit_theta' + str(args.limit_theta) + '_classwise.npy', np.array(acc))
+        print('accuracy of CAT=', acc[3, :, :])
+
 
 
 
