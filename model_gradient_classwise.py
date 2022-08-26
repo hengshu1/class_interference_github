@@ -51,6 +51,35 @@ def save_objects_of_class(data_loader, label):
     torch.save(_X, 'data/cifar-10/class_'+str(label)+'_X.pt')
     torch.save(_Y, 'data/cifar-10/class_' + str(label) + '_Y.pt')
 
+def compute_sample_softmax(net, class_loader, total_samples):
+    '''class_loader is the training data for a class without transform
+    Compute the softmax for each sample for the class objects
+    '''
+    net.eval()
+    train_loss = 0
+    total = 0
+    correct = 0
+    softmax_outputs = np.zeros((total_samples, len(classes)))
+    total_till_last_batch = 0
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(class_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = net(inputs)
+            loss = criterion(outputs, targets)
+
+            train_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+
+            progress_bar(batch_idx, len(class_loader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                         % (train_loss / (batch_idx + 1), 100. * correct / total, correct, total))
+
+            softmax_outputs[total_till_last_batch:total, :] = outputs
+            total_till_last_batch = total
+
+    return softmax_outputs
+
 def save_objects_all_classes(data_loader):
     for cl in range(len(classes)):
         save_objects_of_class(data_loader, label=cl)
@@ -63,7 +92,7 @@ def dataset_class(label):
 
 def train_loader_class(label):
     dataset = dataset_class(label)
-    return torch.utils.data.DataLoader(dataset, batch_size=1000, shuffle=True, num_workers=2)
+    return torch.utils.data.DataLoader(dataset, batch_size=1000, shuffle=True, num_workers=2), len(dataset)
 
 def find_model_file(path, model, lr, lr_mode):
     '''path needs / in the end'''
@@ -81,6 +110,7 @@ if __name__ == "__main__":
     parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
     parser.add_argument('--model', default='VGG19', type=str, help='model name')
     parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
+    parser.add_argument('--output', default='gradient', type=str, help='compute all the class gradients')
     args = parser.parse_args()
 
     args.model = args.model.lower()
@@ -89,6 +119,13 @@ if __name__ == "__main__":
     print('@@model=', args.model)
     print('@@lr=', args.lr)
     print('@@lr_mode=', args.lr_mode)
+    if args.output == 'gradient':
+        print('@@Computing the gradient of all the class gradients')
+    elif args.output == 'softmax':
+        print('@@Computing the softmax output for each sample')
+    else:
+        print('unknown mode for args.output=', args.output)
+        sys.exit(1)
 
     if args.model == 'vgg19':
         net = VGG('VGG19')
@@ -147,7 +184,8 @@ if __name__ == "__main__":
 
         for cl in range(len(classes)):
             print('class: ', classes[cl])
-            trainloader_cls = train_loader_class(label=cl)
+            trainloader_cls, num_samples_cls = train_loader_class(label=cl)
+            print('total class samples:', num_samples_cls)
 
             # saving gradient as a nd array
             # grad = aver_grad_1D(trainloader_cls, net, optimizer, criterion)
@@ -155,12 +193,19 @@ if __name__ == "__main__":
             # np.save(model_path+'_grad_'+classes[cl]+'.npy', grad.cpu().numpy())
             # grad_cls_norm2[cl] = torch.norm(grad)
 
-            #saving gradient as a dictionary
-            grad_net = aver_grad_net(trainloader_cls, net, optimizer, criterion)
-
-            f = open(model_path+'_grad_'+classes[cl]+'.pkl', "wb")
-            pickle.dump(grad_net, f)
-            f.close()
-
+            if args.output == 'gradient':
+                #saving gradient as a dictionary
+                grad_net = aver_grad_net(trainloader_cls, net, optimizer, criterion)
+                f = open(model_path+'_grad_'+classes[cl]+'.pkl', "wb")
+                pickle.dump(grad_net, f)
+                f.close()
+            elif args.output == 'softmax':
+                softmax_cls = compute_sample_softmax(net, trainloader_cls, num_samples_cls)
+                f = open(model_path + '_softmax_' + classes[cl] + '.pkl', "wb")
+                pickle.dump(softmax_cls, f)
+                f.close()
+            else:
+                print('unknown mode for args.output=', args.output)
+                sys.exit(1)
 
         # np.save(model_path+'_grad_norm2_classes.npy', grad_cls_norm2)
