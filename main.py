@@ -20,7 +20,7 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck')
 inv_classes = dict((cl, i) for i, cl in enumerate(classes))
 
-def train(epoch):
+def train(epoch, net, criterion, optimizer, trainloader):
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
@@ -43,7 +43,7 @@ def train(epoch):
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
 
-def test(epoch):
+def test(testloader, criterion):
     global best_acc
     net.eval()
     test_loss = 0
@@ -180,8 +180,8 @@ if __name__ == "__main__":
     # torch.save(net.state_dict(), 'results/model0_vgg_sgd_alpha_'+str(args.lr)+'.pyc')#initial model
     acc_test = -1.0
     for epoch in range(start_epoch, start_epoch+200):
-        train(epoch)
-        acc_test = test(epoch)
+        train(epoch, net, criterion, optimizer, trainloader)
+        acc_test = test(testloader, criterion)
         # f_e = evaluate_f()
         # f_loss.append(f_e)
         if args.lr_mode=='schedule' or args.lr_mode=='anneal':
