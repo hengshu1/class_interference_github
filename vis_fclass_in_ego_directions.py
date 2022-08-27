@@ -37,12 +37,12 @@ c = inv_classes[args.c.lower()]
 print('c=', c)
 
 #CAT loss in CAT-DOG spaces
-# file ='results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_cat_dog_egomodels_acc_limit_theta1.0_classwise.npy'
-# c1, c2 = 3, 5
+file ='results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_cat_dog_egomodels_acc_limit_theta1.0_classwise.npy'
+c1, c2 = 3, 5
 
 #CAT loss in CAR-TRUCK spaces
-file ='results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_car_truck_egomodels_acc_limit_theta1.0_classwise.npy'
-c1, c2 = 1, 9
+# file ='results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_car_truck_egomodels_acc_limit_theta1.0_classwise.npy'
+# c1, c2 = 1, 9
 
 print('loading file ', file)
 acc = np.load(file)
