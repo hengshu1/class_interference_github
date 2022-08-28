@@ -51,7 +51,7 @@ def save_objects_of_class(data_loader, label):
     torch.save(_X, 'data/cifar-10/class_'+str(label)+'_X.pt')
     torch.save(_Y, 'data/cifar-10/class_' + str(label) + '_Y.pt')
 
-def compute_sample_softmax(net, class_loader, total_samples):
+def compute_sample_softmax(net, criterion, class_loader, total_samples):
     '''class_loader is the training data for a class without transform
     Compute the softmax for each sample for the class objects
     '''
@@ -75,7 +75,7 @@ def compute_sample_softmax(net, class_loader, total_samples):
             progress_bar(batch_idx, len(class_loader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (train_loss / (batch_idx + 1), 100. * correct / total, correct, total))
 
-            softmax_outputs[total_till_last_batch:total, :] = outputs
+            softmax_outputs[total_till_last_batch:total, :] = outputs.cpu().numpy()
             total_till_last_batch = total
 
     return softmax_outputs
@@ -98,6 +98,7 @@ def find_model_file(path, model, lr, lr_mode):
     '''path needs / in the end'''
     '''using the first model starting with this header pattern'''
     pattern = path+'model_' + model + '_alpha_' + str(lr) + '_lrmode_' + lr_mode + '_momentum_decayed_testacc_??.??.pyc'
+    print('pattern=', pattern)
     for filename in glob.glob(pattern):
         return filename
     return None

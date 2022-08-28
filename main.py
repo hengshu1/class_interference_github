@@ -43,7 +43,7 @@ def train(epoch, net, criterion, optimizer, trainloader):
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
 
-def test(testloader, criterion):
+def test(net, testloader, criterion):
     global best_acc
     net.eval()
     test_loss = 0
@@ -166,7 +166,6 @@ if __name__ == "__main__":
         start_epoch = checkpoint['epoch']
 
     criterion = nn.CrossEntropyLoss()
-
     optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
 
     if args.lr_mode == 'constant' or args.lr_mode == 'fixed':
