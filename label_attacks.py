@@ -28,6 +28,9 @@ def label_attack(net, criterion, optimizer, train_loader, c1=3, c2=5):
     Attack the label: change objects of c1 to c2
     default is to study c1=CAT and c2 = DOG
     '''
+
+    print('attack {} objects with labeling {}'.format(classes[c1].upper(), classes[c2].upper()))
+
     net.train()
     # net.eval()
     train_loss = 0
@@ -35,6 +38,9 @@ def label_attack(net, criterion, optimizer, train_loader, c1=3, c2=5):
     correct = 0
     for batch_idx, (inputs, targets) in enumerate(train_loader):
         inputs, targets = inputs.to(device), targets.to(device)
+
+        index = (targets == c1).nonzero()[:, 0]
+        targets[index] = torch.ones_like(index) * c2
 
         optimizer.zero_grad()
         outputs = net(inputs)
@@ -106,11 +112,33 @@ if __name__ == "__main__":
     net.load_state_dict(torch.load(model_path))
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
+    optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0, weight_decay=0)
 
-    for epoch in range(200):
-        label_attack(net, criterion, optimizer, trainloader, c1=3, c2=5)
-        acc_test = test(testloader, criterion)
+    #it appears that cats and dogs are not easy to be attacked. they are resillient to attack.
+    #however, the most resilient is car. only 9 cats switch their sign.
+    #so you need more samples on the boundary?
+    #quite unsymmetric
+    #ships and horses are much easier to give up; especially ships
+    # c1, c2 = 3, 5
+    # c1, c2 = 5, 3
+    # c1, c2 = 1, 9
+    # c1, c2 = 9, 1
+    # c1, c2 = 7, 8
+    c1, c2 = 8, 7
+    object_cls_c1, num_samples_cls_c1 = train_loader_class(label=c1, batch_size=5000)
+    object_cls_c2, num_samples_cls_c2 = train_loader_class(label=c2, batch_size=5000)
+    print('num_samples_cls_c1=',num_samples_cls_c1)
+    print('num_samples_cls_c2=', num_samples_cls_c2)
+
+    for epoch in range(1):
+        label_attack(net, criterion, optimizer, trainloader, c1=c1, c2=c2)
+        print('testing c1={}'.format(classes[c1]))
+        acc_test_c1 = test(net, object_cls_c1, criterion)
+        print('testing for all classes')
+        for c_test in range(len(classes)):
+            print('testing {}'.format(classes[c_test]))
+            object_cls_ctest, num_samples_cls_ctest = train_loader_class(label=c_test, batch_size=5000)
+            acc_test_ctest = test(net, object_cls_ctest, criterion)
 
     # softmax_cls = compute_sample_softmax(net, criterion, trainloader_cls, num_samples_cls)
     # f = open(model_path + '_softmax_attack_class' + classes[cl] + '_by_ascent.pkl', "wb")

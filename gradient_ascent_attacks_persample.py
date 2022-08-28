@@ -53,6 +53,47 @@ def train_ascent(net, criterion, optimizer, class_loader):
         progress_bar(batch_idx, len(class_loader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                      % (train_loss / (batch_idx + 1), 100. * correct / total, correct, total))
 
+def train_ascent_per_sample(net, criterion, optimizer, class_loader):
+    '''
+    debugging: just one sample: how many steps to cross the boundary?
+    how many epochs does it take for each sample's label prediction to switch? And do cats switch to DOG?
+    class_loader: batchsize = 1
+    found: easily diverges. 
+    '''
+    # net.train()
+    net.eval()
+    train_loss = 0
+    total = 0
+    correct = 0
+    for batch_idx, (inputs, targets) in enumerate(class_loader):
+        print('batch_idx=', batch_idx)
+        inputs, targets = inputs.to(device), targets.to(device)
+
+        # inputs = inputs[0].unsqueeze(0)
+        # targets = targets[0].unsqueeze(0)
+        # print('inputs.shape=', inputs.shape)
+        # print('targets.shape=', targets.shape)
+
+        for epoch in range(10):
+            optimizer.zero_grad()
+            outputs = net(inputs)
+            loss = - criterion(outputs, targets) #ascent attack
+            # loss = criterion(outputs, targets)
+
+            #update the model
+            loss.backward()
+            optimizer.step()
+
+            train_loss += loss.item()
+            _, predicted = outputs.max(1)
+
+            print('class:', targets[0])
+            print('predi:', predicted[0])
+            print('loss:', train_loss)
+
+        # print('predicted=', predicted)
+        # break
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
@@ -130,17 +171,18 @@ if __name__ == "__main__":
         #     print('requires_grad=', param.requires_grad)
 
         # optimizer = optim.SGD(net.parameters(), lr=0.0001, momentum=0.9, weight_decay=5e-4)
-        optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0., weight_decay=0.)
+        optimizer = optim.SGD(net.parameters(), lr=.0001, momentum=0., weight_decay=0.)
         criterion = nn.CrossEntropyLoss()  # by default. it's mean.
-        print('testing the original trained model')
-        test(net, trainloader_cls, criterion)
+        # print('testing the original trained model')
+        # test(net, trainloader_cls, criterion)
         # test(net, trainloader, criterion)
-        print('done testing.')
+        # print('done testing.')
         #train a small number of steps
-        for epoch in range(10):
-            train_ascent(net, criterion, optimizer, trainloader_cls)
-            # attack all the samples
-            # train_ascent(net, criterion, optimizer, trainloader)
+
+        # train_ascent(net, criterion, optimizer, trainloader_cls)
+        train_ascent_per_sample(net, criterion, optimizer, trainloader_cls)
+        # attack all the samples
+        # train_ascent(net, criterion, optimizer, trainloader)
 
         softmax_cls = compute_sample_softmax(net, criterion, trainloader_cls, num_samples_cls)
         f = open(model_path + '_softmax_attack_class' + classes[cl] + '_by_ascent.pkl', "wb")

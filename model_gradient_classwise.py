@@ -90,9 +90,9 @@ def dataset_class(label):
     dataset = TensorDataset(_X, _Y)
     return dataset
 
-def train_loader_class(label):
+def train_loader_class(label, batch_size=1000):
     dataset = dataset_class(label)
-    return torch.utils.data.DataLoader(dataset, batch_size=1000, shuffle=True, num_workers=2), len(dataset)
+    return torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=2), len(dataset)
 
 def find_model_file(path, model, lr, lr_mode):
     '''path needs / in the end'''
