@@ -15,6 +15,8 @@ from models import *
 from utils import progress_bar
 import numpy as np
 
+from ego_models import train_accuracy_by_class
+
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
 parser.add_argument('--batchsize', default=128, type=int, help='batch size')
@@ -140,25 +142,28 @@ def test(epoch):
                          % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
 
-def evaluate_f_class():
-    '''evaluate the loss for each class on the whole training dataset: no training. '''
-    train_losses_class = np.zeros(len(classes))
-
-    for batch_idx, (inputs, targets) in enumerate(trainloader_big):
-        inputs, targets = inputs.to(device), targets.to(device)
-        outputs = net(inputs)
-        for cl in range(len(classes)):
-            index = (targets == cl).nonzero()[:, 0]
-            loss_c = criterion(outputs[index], targets[index])
-            train_losses_class[cl] += loss_c.item()
-    return train_losses_class
+# def evaluate_f_class():
+#     '''evaluate the loss for each class on the whole training dataset: no training.
+#     note this one uses the original loss; and it's tricky: the loss is averaged over batch; and then summed across batches
+#     '''
+#     train_losses_class = np.zeros(len(classes))
+#     net.eval()
+#     for batch_idx, (inputs, targets) in enumerate(trainloader_big):
+#         inputs, targets = inputs.to(device), targets.to(device)
+#         outputs = net(inputs)
+#         for cl in range(len(classes)):
+#             index = (targets == cl).nonzero()[:, 0]
+#             loss_c = criterion(outputs[index], targets[index])
+#             train_losses_class[cl] += loss_c.item()
+#     return train_losses_class
 
 
 fc_loss = []
 for epoch in range(start_epoch, start_epoch+2):
     train(epoch)
     # test(epoch)
-    fc_loss.append(evaluate_f_class())
+    # fc_loss.append(evaluate_f_class())
+    fc_loss.append(train_accuracy_by_class(net, trainloader))
 
 fc_loss = np.array(fc_loss)
 print('fc_loss.shape', fc_loss.shape)
