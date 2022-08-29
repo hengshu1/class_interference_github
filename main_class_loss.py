@@ -16,130 +16,81 @@ from utils import progress_bar
 import numpy as np
 
 from ego_models import train_accuracy_by_class
+from main import classes, train
 
-parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
-parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
-parser.add_argument('--batchsize', default=128, type=int, help='batch size')
-parser.add_argument('--resume', '-r', action='store_true',
-                    help='resume from checkpoint')
-args = parser.parse_args()
+if __name__ == "__main__":
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-best_acc = 0  # best test accuracy
-start_epoch = 0  # start from epoch 0 or last checkpoint epoch
+    parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+    parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
+    parser.add_argument('--batchsize', default=128, type=int, help='batch size')
+    parser.add_argument('--model', default='vgg19', type=str, help='model name')
+    parser.add_argument('--lr_mode', default='constant', type=str, help='learning rate mode')
+    parser.add_argument('--resume', '-r', action='store_true',
+                        help='resume from checkpoint')
+    args = parser.parse_args()
 
-# Data
-print('==> Preparing data..')
-transform_train = transforms.Compose([
-    transforms.RandomCrop(32, padding=4),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-])
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    best_acc = 0  # best test accuracy
+    start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
-transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-])
+    # Data
+    print('==> Preparing data..')
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
 
-trainset = torchvision.datasets.CIFAR10(
-    root='./data', train=True, download=True, transform=transform_train)
-trainloader = torch.utils.data.DataLoader(
-    trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
-trainloader_big = torch.utils.data.DataLoader(
-    trainset, batch_size=1024, shuffle=False, num_workers=2)
+    transform_test = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
 
-
-testset = torchvision.datasets.CIFAR10(
-    root='./data', train=False, download=True, transform=transform_test)
-testloader = torch.utils.data.DataLoader(
-    testset, batch_size=100, shuffle=False, num_workers=2)
-
-classes = ('plane', 'car', 'bird', 'cat', 'deer',
-           'dog', 'frog', 'horse', 'ship', 'truck')
-
-# Models
-print('==> Building model..')
-net = VGG('VGG19')
-# net = ResNet18()
-# net = PreActResNet18()
-# net = GoogLeNet()
-# net = DenseNet121()
-# net = ResNeXt29_2x64d()
-# net = MobileNet()
-# net = MobileNetV2()
-# net = DPN92()
-# net = ShuffleNetG2()
-# net = SENet18()
-# net = ShuffleNetV2(1)
-# net = EfficientNetB0()
-# net = RegNetX_200MF()
-# net = SimpleDLA()
-net = net.to(device)
-if device == 'cuda':
-    net = torch.nn.DataParallel(net)
-    cudnn.benchmark = True
-
-if args.resume:
-    # Load checkpoint.
-    print('==> Resuming from checkpoint..')
-    assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
-    checkpoint = torch.load('./checkpoint/ckpt.pth')
-    net.load_state_dict(checkpoint['net'])
-    best_acc = checkpoint['acc']
-    start_epoch = checkpoint['epoch']
-
-criterion = nn.CrossEntropyLoss()
-
-optimizer = optim.SGD(net.parameters(), lr=args.lr,
-                      momentum=0)  # first do without momentum
-# optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)
-# removing annealing
-# scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    trainset = torchvision.datasets.CIFAR10(
+        root='./data', train=True, download=True, transform=transform_train)
+    trainloader = torch.utils.data.DataLoader(
+        trainset, batch_size=args.batchsize, shuffle=True, num_workers=2)
+    trainloader_big = torch.utils.data.DataLoader(
+        trainset, batch_size=1024, shuffle=False, num_workers=2)
 
 
-def train(epoch):
-    print('\nEpoch: %d' % epoch)
-    net.train()
-    train_loss = 0
-    correct = 0
-    total = 0
-    for batch_idx, (inputs, targets) in enumerate(trainloader):
-        inputs, targets = inputs.to(device), targets.to(device)
-        optimizer.zero_grad()
-        outputs = net(inputs)
-        loss = criterion(outputs, targets)
-        loss.backward()
-        optimizer.step()
-
-        train_loss += loss.item()
-        _, predicted = outputs.max(1)
-        total += targets.size(0)
-        correct += predicted.eq(targets).sum().item()
-
-        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                     % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    testset = torchvision.datasets.CIFAR10(
+        root='./data', train=False, download=True, transform=transform_test)
+    testloader = torch.utils.data.DataLoader(
+        testset, batch_size=100, shuffle=False, num_workers=2)
 
 
-def test(epoch):
-    global best_acc
-    net.eval()
-    test_loss = 0
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(testloader):
-            inputs, targets = inputs.to(device), targets.to(device)
-            outputs = net(inputs)
-            loss = criterion(outputs, targets)
+    # Models
+    print('==> Building model..')
+    args.model=args.model.lower()
+    print('running model:', args.model)
+    args.lr_mode = args.lr_mode.lower()
+    print('lr mode=', args.lr_mode)
 
-            test_loss += loss.item()
-            _, predicted = outputs.max(1)
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
+    if args.model == 'vgg19':
+        net = VGG('VGG19')
+    elif args.model == 'resnet18':
+        net = ResNet18()
+    else:
+        print('not run yet')
+        sys.exit(1)
 
-            progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    net = net.to(device)
+
+    if device == 'cuda':
+        net = torch.nn.DataParallel(net)
+        cudnn.benchmark = True
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5e-4)  # first do without momentum
+
+    if args.lr_mode == 'constant' or args.lr_mode == 'fixed':
+        scheduler = None
+    elif args.lr_mode == 'schedule' or args.lr_mode == 'anneal':
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    else:
+        print('lr mode not supported this yet. ')
 
 
 # def evaluate_f_class():
@@ -157,15 +108,20 @@ def test(epoch):
 #             train_losses_class[cl] += loss_c.item()
 #     return train_losses_class
 
+    fc_loss = []
+    num_epochs = 200
+    for epoch in range(num_epochs):
+        train(epoch, net, criterion, optimizer, trainloader)
+        # test(epoch)
+        # fc_loss.append(evaluate_f_class())
+        fc_loss.append(train_accuracy_by_class(net, criterion, trainloader))
 
-fc_loss = []
-for epoch in range(start_epoch, start_epoch+2):
-    train(epoch)
-    # test(epoch)
-    # fc_loss.append(evaluate_f_class())
-    fc_loss.append(train_accuracy_by_class(net, trainloader))
+        if args.lr_mode=='schedule' or args.lr_mode=='anneal':
+            scheduler.step()
+            if epoch % 20 == 0 or epoch == num_epochs -1:
+                print('last lr=', scheduler.get_last_lr())
 
-fc_loss = np.array(fc_loss)
-print('fc_loss.shape', fc_loss.shape)
-file_name = 'results/fc_vgg_sgd_alpha_'+str(args.lr)+'.npy'
-np.save(file_name, fc_loss)
+    fc_loss = np.array(fc_loss)
+    print('fc_loss.shape', fc_loss.shape)
+    file_name = 'results/fc_' + args.model+'lrmode_'+ args.lr_mode + '_sgd_alpha_'+str(args.lr)+'.npy'
+    np.save(file_name, fc_loss)

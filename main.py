@@ -175,12 +175,14 @@ if __name__ == "__main__":
     else:
         print('lr mode not supported this yet. ')
 
+
+
     # f_loss = []
     # torch.save(net.state_dict(), 'results/model0_vgg_sgd_alpha_'+str(args.lr)+'.pyc')#initial model
     acc_test = -1.0
     for epoch in range(start_epoch, start_epoch+200):
         train(epoch, net, criterion, optimizer, trainloader)
-        acc_test = test(testloader, criterion)
+        acc_test = test(net, testloader, criterion)
         # f_e = evaluate_f()
         # f_loss.append(f_e)
         if args.lr_mode=='schedule' or args.lr_mode=='anneal':
@@ -196,8 +198,15 @@ if __name__ == "__main__":
     # torch.save(net.state_dict(), 'results/model_vgg_sgd_alpha_'
     #            + str(args.lr)+'_batchsize1024.pyc')
     print('final test acc:', acc_test)
-    torch.save(net.state_dict(), 'results/model_' + args.model+ '_alpha_'+str(args.lr) +
-               '_lrmode_'+ args.lr_mode +'_momentum_decayed_testacc_' + "{:.2f}".format(acc_test, 2)  +'.pyc')
+    # torch.save(net.state_dict(), 'results/model_' + args.model+ '_alpha_'+str(args.lr) +
+    #            '_lrmode_'+ args.lr_mode +'_momentum_decayed_testacc_' + "{:.2f}".format(acc_test, 2)  +'.pyc')
+
+    model_file_name = 'results/model_' + args.model+ '_alpha_'+str(args.lr) \
+                      + '_lrmode_'+ args.lr_mode +'batchsize_'+ str(args.batchsize) + \
+                      '_momentum_decayed_testacc_' + "{:.2f}".format(acc_test, 2)  +'.pyc'
+
+    print(model_file_name)
+    torch.save(net.state_dict(), model_file_name)
 
     # torch.save(net.state_dict(), 'results/model_resnet18_annealing_alpha_'+str(args.lr)+'.pyc')
 

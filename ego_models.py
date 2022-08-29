@@ -42,7 +42,7 @@ def train_accuracy(net, data_loader):
     return 100. * correct / total #train_loss #report accuracy for a fixed scale
 
 
-def train_accuracy_by_class(net, data_loader):
+def train_accuracy_by_class(net, criterion, data_loader):
     net.eval()
     correct, total = 0, 0
     train_loss = 0
@@ -61,7 +61,7 @@ def train_accuracy_by_class(net, data_loader):
             for cl in range(len(classes)):
                 index = (targets == cl).nonzero()[:, 0]
                 class_total[cl] += index.size(0)
-                class_correct[cl] = predicted[index].eq(targets[index]).sum().item()
+                class_correct[cl] += predicted[index].eq(targets[index]).sum().item()
 
             progress_bar(batch_idx, len(data_loader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (train_loss / (batch_idx + 1), 100. * correct / total, correct, total))
