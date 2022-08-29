@@ -27,6 +27,11 @@ limit_theta = 1.
 '''
 This visualization shows that CAR causes all class losses increase sharply. 
 Interesting. Need to understand better. 
+
+CAT and dog ego directions don't influence CAR, TRUCK and DEER's loss: 
+So CAR interferes with CAT most?
+My concern: the conclusion is different based on the choice of Theta_1 and Theta_2
+So better to use some sort of objective measure: like on the training data. 
 '''
 
 print('visualzing loss for ego directions of classes:')
@@ -37,12 +42,12 @@ c = inv_classes[args.c.lower()]
 print('c=', c)
 
 #CAT loss in CAT-DOG spaces
-file ='results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_cat_dog_egomodels_acc_limit_theta1.0_classwise.npy'
-c1, c2 = 3, 5
+# file ='results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_cat_dog_egomodels_acc_limit_theta1.0_classwise.npy'
+# c1, c2 = 3, 5
 
 #CAT loss in CAR-TRUCK spaces
-# file ='results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_car_truck_egomodels_acc_limit_theta1.0_classwise.npy'
-# c1, c2 = 1, 9
+file ='results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_car_truck_egomodels_acc_limit_theta1.0_classwise.npy'
+c1, c2 = 1, 9
 
 print('loading file ', file)
 acc = np.load(file)
