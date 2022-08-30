@@ -15,7 +15,7 @@ from models import *
 from utils import progress_bar
 import numpy as np
 
-from ego_models import train_accuracy_by_class
+from ego_models import train_G_matrix
 from main import classes, train
 
 if __name__ == "__main__":
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         train(epoch, net, criterion, optimizer, trainloader)
         # test(epoch)
         # fc_loss.append(evaluate_f_class())
-        fc_loss.append(train_accuracy_by_class(net, criterion, trainloader))
+        fc_loss.append(train_G_matrix(net, criterion, trainloader))
 
         if args.lr_mode=='schedule' or args.lr_mode=='anneal':
             scheduler.step()
@@ -123,5 +123,6 @@ if __name__ == "__main__":
 
     fc_loss = np.array(fc_loss)
     print('fc_loss.shape', fc_loss.shape)
-    file_name = 'results/fc_' + args.model+'lrmode_'+ args.lr_mode + '_sgd_alpha_'+str(args.lr)+'.npy'
+    # file_name = 'results/fc_' + args.model+'lrmode_'+ args.lr_mode + '_sgd_alpha_'+str(args.lr)+'.npy'
+    file_name = 'results/Gmatrix_' + args.model+'lrmode_'+ args.lr_mode + '_sgd_alpha_'+str(args.lr)+'.npy'
     np.save(file_name, fc_loss)

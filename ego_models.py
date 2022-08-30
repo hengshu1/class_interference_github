@@ -72,6 +72,40 @@ def train_accuracy_by_class(net, criterion, data_loader):
         print('@@class ', cl, ', accuracy:', train_accuracy_class[cl])
     return train_accuracy_class
 
+def train_G_matrix(net, criterion, data_loader):
+    net.eval()
+    correct, total = 0, 0
+    train_loss = 0
+    class_correct, class_total = np.zeros((len(classes), len(classes))), np.zeros(len(classes))
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(data_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = net(inputs)
+            loss = criterion(outputs, targets)
+
+            train_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+
+            for cl in range(len(classes)):
+                index = (targets == cl).nonzero()[:, 0]
+                class_total[cl] += index.size(0)
+
+                for cl2 in range(len(classes)):
+                    class_correct[cl, cl2] += predicted[index].eq(cl2).sum().item()
+
+            progress_bar(batch_idx, len(data_loader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                         % (train_loss / (batch_idx + 1), 100. * correct / total, correct, total))
+
+    Gmatrix = np.zeros((len(classes), len(classes)))
+    for cl in range(len(classes)):
+        Gmatrix[cl, :] = 100. * class_correct[cl, :] / class_total[cl]
+        print('@@class ', cl, ', G matrix row:', Gmatrix[cl, :])
+        # print('sum of row:', np.sum(Gmatrix[cl, :]))
+        # print('total:', class_total[cl])
+    return Gmatrix
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
