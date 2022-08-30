@@ -182,7 +182,7 @@ if __name__ == "__main__":
                     acc[i, j] = train_accuracy(w, trainloader)
                     # print('accuracy=', acc[i, j])
                 else:
-                    acc[:, i,j] = train_accuracy_by_class(w, trainloader)
+                    acc[:, i, j] = train_accuracy_by_class(w, trainloader)
 
     if args.loss == 'gross':
         print('accuracy=', acc)
