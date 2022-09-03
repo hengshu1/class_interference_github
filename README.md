@@ -1,35 +1,31 @@
-# Train CIFAR10 with PyTorch
+# Code for paper: Class Inteference of Deep Networks
 
-I'm playing with [PyTorch](http://pytorch.org/) on the CIFAR10 dataset.
 
 ## Prerequisites
 - Python 3.6+
 - PyTorch 1.0+
 
-## Training
+## Commands
 ```
 # Start training with: 
 python main.py
 
-# You can manually resume the training with: 
-python main.py --resume --lr=0.01
+# Generating class ego directions:
+python model_gradient_classwise.py --lr 0.0001 --lr_mode constant --model vgg19
+
+# Generate the loss data in the interference space
+python ego_models.py --lr 0.0001 --lr_mode constant --model vgg19 --resolution high --c1 cat --c2 dog
+
+# Visualize using the generated loss data
+python vis_f_in_cat_dog_ego_directions.py --lr 0.0001 --lr_mode constant --model vgg19 --c1 cat --c2 dog
+
+
+# Detect class interference in training
+python main_class_loss.py
+
+# Plot the Class Dance and Dancing Notes:
+python vis_fc_in_ego_directions.py --c cat --c1 cat --c2 dog
 ```
 
-## Accuracy
-| Model             | Acc.        |
-| ----------------- | ----------- |
-| [VGG16](https://arxiv.org/abs/1409.1556)              | 92.64%      |
-| [ResNet18](https://arxiv.org/abs/1512.03385)          | 93.02%      |
-| [ResNet50](https://arxiv.org/abs/1512.03385)          | 93.62%      |
-| [ResNet101](https://arxiv.org/abs/1512.03385)         | 93.75%      |
-| [RegNetX_200MF](https://arxiv.org/abs/2003.13678)     | 94.24%      |
-| [RegNetY_400MF](https://arxiv.org/abs/2003.13678)     | 94.29%      |
-| [MobileNetV2](https://arxiv.org/abs/1801.04381)       | 94.43%      |
-| [ResNeXt29(32x4d)](https://arxiv.org/abs/1611.05431)  | 94.73%      |
-| [ResNeXt29(2x64d)](https://arxiv.org/abs/1611.05431)  | 94.82%      |
-| [SimpleDLA](https://arxiv.org/abs/1707.064)           | 94.89%      |
-| [DenseNet121](https://arxiv.org/abs/1608.06993)       | 95.04%      |
-| [PreActResNet18](https://arxiv.org/abs/1603.05027)    | 95.11%      |
-| [DPN92](https://arxiv.org/abs/1707.01629)             | 95.16%      |
-| [DLA](https://arxiv.org/pdf/1707.06484.pdf)           | 95.47%      |
-
+## Paper:
+Dongcui Diao, Bei Jiang, Hengshuai Yao, Class Inteference of Deep Networks. [pdf](future link)
