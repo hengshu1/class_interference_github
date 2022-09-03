@@ -18,8 +18,6 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, TensorDataset
 from utils import progress_bar
-from torch.nn.utils import parameters_to_vector as to_vector
-from measure_cross_class_distances import get_train_cats
 from model_gradient import concat_param_grad, aver_grad_1D, aver_grad_net
 from main import classes, device
 
