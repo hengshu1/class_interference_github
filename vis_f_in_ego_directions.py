@@ -34,8 +34,8 @@ print('c1=', c1, '; c2=', c2)
 # model_path = 'results/model_vgg19_alpha_0.01_lrmode_constant_momentum_decayed_testacc_88.76.pyc'
 # model_path = 'results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc'
 # file = 'results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_cat_dog_egomodels_acc_limit_theta1.0.npy'
-# file = 'results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_cat_dog_egomodels_acc_limit_theta1.0_2nd.npy'
-file = 'results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_car_truck_egomodels_acc_limit_theta1.0_2nd.npy'
+file = 'results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_cat_dog_egomodels_acc_limit_theta1.0_2nd.npy'
+# file = 'results/model_vgg19_alpha_0.1_lrmode_schedule_momentum_decayed_testacc_93.87.pyc_car_truck_egomodels_acc_limit_theta1.0_2nd.npy'
 # print('model_path', model_path)
 # file = 'results/model_vgg19_alpha_0.0001_lrmode_constant_momentum_decayed_testacc_84.99.pyc_cat_dog_egomodels_acc_limit_theta0.01.npy'
 # file = 'results/model_vgg19_alpha_0.0001_lrmode_constant_momentum_decayed_testacc_84.99.pyc_cat_dog_egomodels_acc_limit_theta0.01_2nd.npy'
@@ -57,8 +57,8 @@ acc = np.load(file)
 losses = 100 - acc
 
 #X and Y plane: The loss was two-loop. outside is theta1 fixed. theta2 changes. So theta1 is y. c1 is y.
-# theta1s = np.linspace(0, limit_theta, 10)
-theta1s = np.linspace(0, limit_theta, 5)
+theta1s = np.linspace(0, limit_theta, 10)
+# theta1s = np.linspace(0, limit_theta, 5)
 theta1s_neg = -theta1s[1:]
 theta1s = list(reversed(theta1s_neg.tolist())) + theta1s.tolist()
 print('theta1s=', theta1s)

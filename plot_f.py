@@ -22,11 +22,69 @@ print('file=', file_name)
 fc_loss= np.load(file_name)
 
 
-gmat_loss = np.load(file_gmatrix_name)
-print(gmat_loss.shape)
+all_CCTM = np.load(file_gmatrix_name)
+print(np.max(all_CCTM))
+
+inter_threshold = 0.1#5.#3.#1.#0.1
+
+inter_class = -2 * np.ones((all_CCTM.shape[0], all_CCTM.shape[1])) #interference class index
+for epoch in range(all_CCTM.shape[0]):
+    CCTM = all_CCTM[epoch, :, :]
+    for i in range(CCTM.shape[0]):
+        inter_of_i = -2
+        max_this_row = -2
+        for j in range(CCTM.shape[1]):
+            if i != j and CCTM[i, j] > max_this_row:
+                inter_of_i = j
+                max_this_row = CCTM[i, j]
+        if max_this_row > inter_threshold: # percent
+            inter_class[epoch, i] = inter_of_i
+print(inter_class[:, 3])
+pt.figure()
+#music21 may be the package to go: not sure
+pt.plot(inter_class[:, 3], '-r', marker='x', markersize=5, label="CAT(3) notes")
+pt.plot(inter_class[:, 5], '-.m', marker=r'$\rho$', markersize=5, label="DOG(5) notes")
+pt.plot(inter_class[:, 1], ':b', marker='D', markersize=5, label="CAR(1) notes")
+pt.plot(inter_class[:, 9], '--k', marker ='.', markersize=12, label="TRUCK(9) notes")
+pt.legend(fontsize=12, labelcolor='linecolor', loc='lower left', ncol=2)
+pt.xlabel('epochs', fontsize=12)
+pt.xlim([-1, 183])
+pt.ylabel('Class that dominates interference', fontsize=12)
+pt.show()
+
+#count the times for each dorminating class for the CAT notes
+def count_dorminating_times(inter_class, c, c_inter):
+    # print('c=', c)
+    # print('c_inter=', c_inter)
+    # print(inter_class[:, c])
+    result = np.where(inter_class[:, c] == c_inter)
+    # print('result[0].shape=', result[0].shape)
+    # print('result[0].shape[0]=', result[0].shape[0])
+    # print('result[1].shape=', result[1].shape)
+    return result[0].shape[0]
+
+Gmat_from_train=np.zeros((len(classes), len(classes)))
+for c in range(len(classes)):
+    for i in range(len(classes)):
+        Gmat_from_train[c, i] = count_dorminating_times(inter_class, c=c, c_inter=i)
+        print('number of times {} dorminating the interference to {}:{}'.format(classes[i].upper(), classes[3].upper(), Gmat_from_train[c, i]))
+
+print(Gmat_from_train[3, :])#CAT
+print(Gmat_from_train[5, :])#DOG
+print(Gmat_from_train[8, :])#SHIP
+print(Gmat_from_train[1, :])#CAR
+print(Gmat_from_train[9, :])#TRUCK
+pt.figure()
+pt.imshow(Gmat_from_train, cmap = 'hot_r', interpolation='none')
+pt.show()
+
+sys.exit(1)
+
 fc_loss_from_diag = np.diagonal(gmat_loss, axis1=1, axis2=2)
 
 fc_loss = fc_loss_from_diag
+print('fc_loss_from_diag.shape=', fc_loss_from_diag.shape)
+
 
 c1, c2 = 3, 5
 
@@ -61,6 +119,9 @@ c1, c2 = 3, 5
 
 pt.figure()
 
+#check two methods of computing the recall rates for cats are the same? Yes.
+# pt.plot(fc_loss[:, 3], '-mo', label='diag cat recall')
+
 pt.plot(gmat_loss[:, c1, c1], '-k', label='recall rate--'+classes[c1])
 pt.plot(gmat_loss[:, c2, c2], '--c', label='recall rate--'+classes[c2])
 
@@ -71,8 +132,8 @@ markers=['--k+', ':ko', '-.ks',
          ':gh'
          ]
 for c2 in range(len(classes)):
-    if c2 != c1:
-        pt.plot(gmat_loss[:, c1, c2], markers[c2], label='--% of {}s predicted as {}'.format(classes[c1].lower(), classes[c2].upper()))
+    # if c2 != c1:
+    pt.plot(gmat_loss[:, c1, c2], markers[c2], label='--% of {}s predicted as {}'.format(classes[c1].lower(), classes[c2].upper()))
 # pt.plot(gmat_loss[:, c1, c1], '-m', label='--% of {}s predicted as {}'.format(classes[c1].lower(), classes[c1].upper()))
 # pt.plot(gmat_loss[:, c1, 5], '-ro', label='--% of {}s predicted as {}'.format(classes[c1].lower(), classes[5].upper()))
 # pt.plot(gmat_loss[:, c1, 1], '-.k+', label='--% of {}s predicted as {}'.format(classes[c1].lower(), classes[1].upper()))
