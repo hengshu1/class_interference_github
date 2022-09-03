@@ -1,13 +1,11 @@
 # Code for paper: Class Inteference of Deep Networks
 
 
-
-
 ## Prerequisites
 - Python 3.6+
 - PyTorch 1.0+
 
-## Training
+## Commands
 ```
 # Start training with: 
 python main.py
@@ -29,4 +27,5 @@ python main_class_loss.py
 python vis_fc_in_ego_directions.py --c cat --c1 cat --c2 dog
 ```
 
-
+## Paper:
+Dongcui Diao, Bei Jiang, Hengshuai Yao, Class Inteference of Deep Networks. [pdf](future link)
