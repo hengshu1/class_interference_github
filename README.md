@@ -20,8 +20,11 @@
 4. Generate the loss data in the interference space. 
 >`python ego_models.py --lr 0.0001 --lr_mode constant --model vgg19 --resolution high --c1 cat --c2 dog`
 
-5. Visualize the loss for a class $c$ in the ego space of (class c1, class c2) for model VGG19. This is for  Fig 2/3/4(overall test loss), 5.  
->`python plot_class_loss_in_ego_spaces -model vgg19 -c cat -c1 cat -c2 dog`
+5. Visualize the overall loss in the ego space of (class c1, class c2) for model VGG19. This is for  Fig 2/3/4(overall test loss)  
+>`python plot_overall_loss_in_ego_space.py -model vgg19 -c1 cat -c2 dog`
+
+6. Visualize the loss for a class $c$ in the ego space of (class c1, class c2) for model VGG19. This is for Fig 5.  
+>`python plot_class_loss_in_ego_space.py -model vgg19 -c cat -c1 cat -c2 dog`
 
 7. Plot Fig 6 (inteference dancing) and Fig 7 (interference notes), using
 > `python plot_interference_dancing_and_notes.py` Before this, you need to generate the data first, using 
