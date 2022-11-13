@@ -7,7 +7,7 @@
 
 ## Commands
 
-1. Train a model and save the final model. For example, `python main.py --model ResNet18 --lr 0.1 --lr_mode schedule' trains a ResNet18 model with SGD aided with learning rate annealing, starting with 0.1 rate and Cosine annealing. 
+1. Train a model and save the final model. For example, `python main.py --model ResNet18 --lr 0.1 --lr_mode schedule` trains a ResNet18 model with SGD aided with learning rate annealing, starting with 0.1 rate and Cosine annealing. 
 
 2. Generating class ego directions: `python model_gradient_classwise.py --lr 0.0001 --lr_mode constant --model vgg19`
 
