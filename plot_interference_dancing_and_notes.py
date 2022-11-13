@@ -40,8 +40,9 @@ for epoch in range(all_CCTM.shape[0]):
         if max_this_row > inter_threshold: # percent
             inter_class[epoch, i] = inter_of_i
 print(inter_class[:, 3])
+
+#Fig 7
 pt.figure()
-#music21 may be the package to go: not sure
 pt.plot(inter_class[:, 3], '-r', marker='x', markersize=5, label="CAT(3) notes")
 pt.plot(inter_class[:, 5], '-.m', marker=r'$\rho$', markersize=5, label="DOG(5) notes")
 pt.plot(inter_class[:, 1], ':b', marker='D', markersize=5, label="CAR(1) notes")
@@ -117,6 +118,7 @@ c1, c2 = 3, 5
 # pt.xlim([-5, 160])
 # pt.show()
 
+#Fig 6
 pt.figure()
 
 #check two methods of computing the recall rates for cats are the same? Yes.

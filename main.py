@@ -85,8 +85,6 @@ if __name__ == "__main__":
                         type=int, help='batch size')
     parser.add_argument('--model', default='VGG19', type=str, help='model name')
     parser.add_argument('--lr_mode', default='constant', type=str, help='lr mode')
-    parser.add_argument('--resume', '-r', action='store_true',
-                        help='resume from checkpoint')
     args = parser.parse_args()
 
     print('@@lr=', args.lr)

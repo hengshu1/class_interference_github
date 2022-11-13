@@ -5,6 +5,11 @@ import argparse
 from main import classes, inv_classes
 from model_gradient_classwise import find_model_file
 
+
+'''
+Fig 5: visualize the loss of a class $c$ in the ego space of (class $c1$, class $c2$)
+'''
+
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.01, type=float, help='learning rate')
 parser.add_argument('--model', default='VGG19', type=str, help='model name')
