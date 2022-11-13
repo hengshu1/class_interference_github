@@ -8,9 +8,7 @@
 ## Commands
 
 1. Train a model and save the final model. For example, to train a ResNet18 model with SGD aided with learning rate annealing, starting with 0.1 rate and Cosine annealing. 
-
-`python main.py --model ResNet18 --lr 0.1 --lr_mode schedule` 
-
+>`python main.py --model ResNet18 --lr 0.1 --lr_mode schedule` 
 
 2. Plot CCTM: Cross-Class Test accuracy Matrix/Map. 
    1. Run `python generate_cctm.py` This is used to generate the data for Figure 1 and Table 1 in the paper. 
