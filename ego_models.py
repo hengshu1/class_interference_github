@@ -70,6 +70,7 @@ def train_accuracy_by_class(net, criterion, data_loader):
     for cl in range(len(classes)):
         train_accuracy_class[cl] = 100. * class_correct[cl] / class_total[cl]
         print('@@class ', cl, ', accuracy:', train_accuracy_class[cl])
+        print('@@class_correct[cl]=', class_correct[cl])
     return train_accuracy_class
 
 def train_G_matrix(net, criterion, data_loader):
@@ -127,8 +128,8 @@ if __name__ == "__main__":
     args.model = args.model.lower()
     args.lr_mode = args.lr_mode.lower()
 
-    if args.lr_mode == 'schedule':
-        args.lr_mode = 'anneal'
+    # if args.lr_mode == 'schedule':
+    #     args.lr_mode = 'anneal'
 
     print('@@model=', args.model)
     print('@@lr=', args.lr)
@@ -216,7 +217,7 @@ if __name__ == "__main__":
                     acc[i, j] = train_accuracy(w, trainloader)
                     # print('accuracy=', acc[i, j])
                 else:
-                    acc[:, i, j] = train_accuracy_by_class(w, trainloader)
+                    acc[:, i, j] = train_accuracy_by_class(w, criterion, trainloader)
 
     if args.loss == 'gross':
         print('accuracy=', acc)
