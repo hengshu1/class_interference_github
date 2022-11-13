@@ -28,4 +28,4 @@ python vis_fc_in_ego_directions.py --c cat --c1 cat --c2 dog
 ```
 
 ## Paper:
-[Class Inteference of Deep Networks](https://arxiv.org/abs/2211.01370). Dongcui Diao, Hengshuai Yao, Bei Jiang. 
+[Class Inteference of Deep Networks](https://arxiv.org/abs/2211.01370). Dongcui Diao, Hengshuai Yao, Bei Jiang. 2022. 
