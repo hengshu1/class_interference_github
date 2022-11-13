@@ -17,7 +17,7 @@
 3. Generating class ego directions. The saved ego directions will be used to generate the interference models. 
 >`python model_gradient_classwise.py --lr 0.0001 --lr_mode constant --model vgg19`
 
-4. Generate the loss data in the interference space. 
+4. Generate the loss data in the interference space. Note it has two loss modes. 
 >`python ego_models.py --lr 0.0001 --lr_mode constant --model vgg19 --resolution high --c1 cat --c2 dog --loss gross` generates the overall loss conditioned on the ego space (c1, c2). 
 >>`python ego_models.py --lr 0.0001 --lr_mode constant --model vgg19 --resolution high --c1 cat --c2 dog --loss class-wise` generates the class-wise loss for each class. 
 
