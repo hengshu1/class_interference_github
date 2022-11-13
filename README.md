@@ -16,7 +16,7 @@ trains a ResNet18 model with SGD aided with learning rate annealing, starting wi
    1. Run `python generate_cctm.py` This is used to generate the data for Figure 1 and Table 1 in the paper. 
    2. After this, run `python plot_cctm.py` to generate Figure 1. 
 
-3. Generating class ego directions: 
+3. Generating class ego directions. The saved ego directions will be used to generate the interference models. 
 >`python model_gradient_classwise.py --lr 0.0001 --lr_mode constant --model vgg19`
 
 4. Generate the loss data in the interference space. 
@@ -25,14 +25,13 @@ trains a ResNet18 model with SGD aided with learning rate annealing, starting wi
 5. Visualize using the generated loss data. 
 >`python vis_f_in_cat_dog_ego_directions.py --lr 0.0001 --lr_mode constant --model vgg19 --c1 cat --c2 dog`
 
-6. Detect class interference in training. 
+6. Visualize the loss for a class $c$ in the ego space of (class c1, class c2) for model VGG19. This is Fig 5.  
+>`python plot_class_loss_in_ego_spaces -model vgg19 -c cat -c1 cat -c2 dog`
+
+7. Plot Fig 6 (inteference dancing) and Fig 7 (interference notes), using
+> `python plot_interference_dancing_and_notes.py` Before this, you need to generate the data first, using 
 >`python main_class_loss.py`
 
-7. Plot the Class Dance and Dancing Notes. 
->`python vis_fc_in_ego_directions.py --c cat --c1 cat --c2 dog`\
-
-8. Plot Fig 6 (inteference dancing) and Fig 7 (interference notes), using
-> `python plot_interference_dancing_and_notes.py`
 
 ## Paper:
 [Class Inteference of Deep Networks](https://arxiv.org/abs/2211.01370). Dongcui Diao, Hengshuai Yao, Bei Jiang. 2022. 
