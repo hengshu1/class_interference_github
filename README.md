@@ -18,8 +18,8 @@
 >`python model_gradient_classwise.py --lr 0.0001 --lr_mode constant --model vgg19`
 
 4. Generate the loss data in the interference space. Note it has two loss modes. 
->`python ego_models.py --lr 0.0001 --lr_mode constant --model vgg19 --resolution high --c1 cat --c2 dog --loss gross` generates the overall loss conditioned on the ego space (c1, c2). 
->`python ego_models.py --lr 0.0001 --lr_mode constant --model vgg19 --resolution high --c1 cat --c2 dog --loss class-wise` generates the class-wise loss for each class. 
+   1. `python ego_models.py --lr 0.0001 --lr_mode constant --model vgg19 --resolution high --c1 cat --c2 dog --loss gross` generates the overall loss conditioned on the ego space (c1, c2). 
+   2. `python ego_models.py --lr 0.0001 --lr_mode constant --model vgg19 --resolution high --c1 cat --c2 dog --loss class-wise` generates the class-wise loss for each class. 
 
 5. Visualize the overall loss in the ego space of (class c1, class c2) for model VGG19. This is for  Fig 2/3/4(overall test loss)  
 >`python plot_overall_loss_in_ego_space.py -model vgg19 -c1 cat -c2 dog`
