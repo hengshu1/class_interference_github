@@ -86,24 +86,3 @@ ha.set_zlabel('100 - recall accuracy')
 ha.set_zlim([0,100])
 plt.show()
 
-# def f(x, y):
-#     return np.sin(np.sqrt(x ** 2 + y ** 2))
-#
-# x = np.linspace(-6, 6, 30)
-# y = np.linspace(-6, 6, 30)
-#
-# X, Y = np.meshgrid(x, y)
-# Z = f(X, Y)
-#
-# print(X.shape)
-# print(Y.shape)
-# print(Z.shape)
-# print(X[0, :])
-# print(X[1, :])#the same
-#
-# fig = plt.figure()
-# ax = plt.axes(projection='3d')
-# ax.contour3D(X, Y, Z, 50, cmap='binary')
-# ax.set_xlabel('x')
-# ax.set_ylabel('y')
-# ax.set_zlabel('z');
